@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('keranjang_details', function (Blueprint $table) {
             $table->integer('id')->autoIncrement();
             $table->integer('keranjang_id');
-            $table->integer('barang_id');
+            $table->integer('barang_variasi_id');
             $table->integer('jumlah');
             $table->decimal('harga');
             $table->decimal('subtotal');
