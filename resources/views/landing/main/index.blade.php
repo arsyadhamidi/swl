@@ -7,7 +7,7 @@
 
         <div class="container">
 
-            <h1>Selamat Datang di SWL Collection</h1>
+            <h1>Selamat Datang di SWL Kids</h1>
 
             <p class="mt-3">
                 Temukan berbagai produk fashion terbaik dengan kualitas premium dan harga terjangkau
@@ -32,7 +32,7 @@
             <h2>Tentang Toko</h2>
 
             <p class="mt-3">
-                SWL Collection adalah toko fashion yang menyediakan berbagai produk berkualitas
+                SWL Kids adalah toko fashion yang menyediakan berbagai produk berkualitas
                 dengan desain modern dan harga terjangkau untuk semua kalangan.
             </p>
 
@@ -286,7 +286,7 @@
             </p>
 
             <p>
-                📧 swlcollection@gmail.com
+                📧 swlkids@gmail.com
             </p>
 
             <p>

@@ -7,7 +7,7 @@
           content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token"
           content="{{ csrf_token() }}">
-    <title>Landing | SWL Collection</title>
+    <title>Landing | SWL Kids</title>
 
     <link rel="stylesheet"
           href="{{ asset('plugins/bootstrap-5.2.3/css/bootstrap.min.css') }}">
@@ -31,7 +31,7 @@
         <div class="container">
 
             <a class="navbar-brand"
-               href="#">SWL Collection</a>
+               href="#">SWL Kids</a>
 
             <button class="navbar-toggler bg-light"
                     type="button"
@@ -135,7 +135,7 @@
 
         <div class="container">
 
-            <p>© 2026 SWL Collection. All Rights Reserved.</p>
+            <p>© 2026 SWL Kids. All Rights Reserved.</p>
 
         </div>
 
