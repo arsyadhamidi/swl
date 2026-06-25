@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Exports\PesananExport;
 use App\Http\Controllers\Controller;
+use App\Models\Barang;
 use App\Models\DetailPesanan;
 use App\Models\Pesanan;
 use Carbon\Carbon;
@@ -49,19 +50,19 @@ class AdminPesananController extends Controller
             // Tambahkan kolom aksi
             $dataWithActions = $data->map(function ($item) {
                 $resultid = $item->id ?? '';
-                $buktiUrl = asset('storage/' . $item->bukti_pembayaran);
+                $buktiUrl = asset('storage/'.$item->bukti_pembayaran);
                 $receiptUrl = route('admin-pesanan.detailpesananpdf', $item->id);
 
                 $item->aksi = '
-                <a href="' . $buktiUrl . '" class="btn btn-outline-warning" target="_blank">
+                <a href="'.$buktiUrl.'" class="btn btn-outline-warning" target="_blank">
                     <i class="fas fa-image"></i>
                 </a>
                 <button type="button"
                         class="btn btn-outline-primary btn-detail mx-2"
-                        data-id="' . e($resultid) . '">
+                        data-id="'.e($resultid).'">
                     <i class="fas fa-edit"></i>
                 </button>
-                <a href="' . $receiptUrl . '" class="btn btn-outline-danger" target="_blank">
+                <a href="'.$receiptUrl.'" class="btn btn-outline-danger" target="_blank">
                     <i class="fas fa-receipt"></i>
                 </a>
 ';
@@ -82,25 +83,52 @@ class AdminPesananController extends Controller
 
     public function detailpesananpdf($id)
     {
-        $pesanans = Pesanan::join('users', 'pesanans.users_id', 'users.id')
-            ->select([
+        $pesanans = Pesanan::join(
+            'users',
+            'pesanans.users_id',
+            '=',
+            'users.id'
+        )
+            ->select(
                 'pesanans.*',
-                'users.name',
-            ])
-            ->where('pesanans.id', $id)->firstOrFail();
-        $detailPesanans = DetailPesanan::join('barangs', 'detail_pesanans.barang_id', 'barangs.id')
-            ->select([
+                'users.name'
+            )
+            ->where('pesanans.id', $id)
+            ->firstOrFail();
+
+        $detailPesanans = DetailPesanan::join(
+            'barang_variasis',
+            'detail_pesanans.barang_variasi_id',
+            '=',
+            'barang_variasis.id'
+        )
+            ->join(
+                'barangs',
+                'barang_variasis.barang_id',
+                '=',
+                'barangs.id'
+            )
+            ->select(
                 'detail_pesanans.*',
                 'barangs.nm_barang',
-            ])
-            ->where('detail_pesanans.pesanan_id', $id)->orderBy('detail_pesanans.id', 'desc')->get();
+                'barang_variasis.ukuran',
+                'barang_variasis.warna'
+            )
+            ->where('detail_pesanans.pesanan_id', $id)
+            ->orderByDesc('detail_pesanans.id')
+            ->get();
 
-        $pdf = PDF::loadview('admin.pesanan.detail-pdf', [
-            'pesanans' => $pesanans,
-            'detailPesanans' => $detailPesanans,
-        ]);
-        // return $pdf->download('detail-pesanan.pdf');
-        return $pdf->stream('detail-pesanan.pdf');
+        $pdf = PDF::loadView(
+            'admin.pesanan.detail-pdf',
+            [
+                'pesanans' => $pesanans,
+                'detailPesanans' => $detailPesanans,
+            ]
+        );
+
+        return $pdf->stream(
+            'detail-pesanan-'.$pesanans->id.'.pdf'
+        );
     }
 
     public function generatepdf(Request $request)
@@ -124,7 +152,7 @@ class AdminPesananController extends Controller
         $pdf = PDF::loadView('admin.pesanan.export-pdf', ['pesanans' => $data])
             ->setPaper('A4', 'landscape');
 
-        return $pdf->stream(Carbon::now()->format('YmdHis') . '-pesanan.pdf');
+        return $pdf->stream(Carbon::now()->format('YmdHis').'-pesanan.pdf');
     }
 
     public function generateexcel(Request $request)
@@ -147,14 +175,14 @@ class AdminPesananController extends Controller
 
         return Excel::download(
             new PesananExport($data),
-            Carbon::now()->format('YmdHis') . '-pesanan.xlsx'
+            Carbon::now()->format('YmdHis').'-pesanan.xlsx'
         );
     }
 
     public function update(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required'
+            'status' => 'required',
         ]);
 
         $pesanan = Pesanan::findOrFail($id);
@@ -180,7 +208,7 @@ class AdminPesananController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Status berhasil diupdate'
+            'message' => 'Status berhasil diupdate',
         ]);
     }
 }

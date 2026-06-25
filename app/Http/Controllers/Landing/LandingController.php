@@ -359,25 +359,49 @@ class LandingController extends Controller
 
     public function detailpesananpdf($id)
     {
-        $pesanans = Pesanan::join('users', 'pesanans.users_id', 'users.id')
-            ->select([
+        $pesanans = Pesanan::join(
+            'users',
+            'pesanans.users_id',
+            '=',
+            'users.id'
+        )
+            ->select(
                 'pesanans.*',
-                'users.name',
-            ])
-            ->where('pesanans.id', $id)->firstOrFail();
-        $detailPesanans = DetailPesanan::join('barangs', 'detail_pesanans.barang_id', 'barangs.id')
-            ->select([
+                'users.name'
+            )
+            ->where('pesanans.id', $id)
+            ->firstOrFail();
+
+        $detailPesanans = DetailPesanan::join(
+            'barang_variasis',
+            'detail_pesanans.barang_variasi_id',
+            '=',
+            'barang_variasis.id'
+        )
+            ->join(
+                'barangs',
+                'barang_variasis.barang_id',
+                '=',
+                'barangs.id'
+            )
+            ->select(
                 'detail_pesanans.*',
                 'barangs.nm_barang',
-            ])
-            ->where('detail_pesanans.pesanan_id', $id)->orderBy('detail_pesanans.id', 'desc')->get();
+                'barang_variasis.ukuran',
+                'barang_variasis.warna'
+            )
+            ->where('detail_pesanans.pesanan_id', $id)
+            ->orderByDesc('detail_pesanans.id')
+            ->get();
 
-        $pdf = PDF::loadview('landing.setting.pesanan.detail-pdf', [
-            'pesanans' => $pesanans,
-            'detailPesanans' => $detailPesanans,
-        ]);
+        $pdf = PDF::loadView(
+            'landing.setting.pesanan.detail-pdf',
+            [
+                'pesanans' => $pesanans,
+                'detailPesanans' => $detailPesanans,
+            ]
+        );
 
-        // return $pdf->download('detail-pesanan.pdf');
         return $pdf->stream('detail-pesanan.pdf');
     }
 

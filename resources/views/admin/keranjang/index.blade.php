@@ -235,22 +235,81 @@
 
                         let html = "";
                         let no = 1;
+                        let total = 0;
 
-                        res.forEach(function(item) {
+                        if (res.length === 0) {
 
-                            html += `
+                            html = `
                     <tr>
-                        <td>${no++}</td>
-                        <td>${item.nm_barang}</td>
-                        <td>${item.jumlah}</td>
-                        <td>Rp ${Number(item.harga).toLocaleString('id-ID')}</td>
-                        <td>Rp ${Number(item.subtotal).toLocaleString('id-ID')}</td>
+                        <td colspan="6" class="text-center text-muted">
+                            Data keranjang tidak ditemukan
+                        </td>
                     </tr>
                 `;
-                        });
+
+                        } else {
+
+                            res.forEach(function(item) {
+
+                                total += parseFloat(item.subtotal);
+
+                                html += `
+                        <tr>
+                            <td class="text-center">
+                                ${no++}
+                            </td>
+
+                            <td>
+                                <strong>${item.nm_barang}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    Ukuran : ${item.ukuran}
+                                    <br>
+                                    Warna : ${item.warna}
+                                </small>
+                            </td>
+
+                            <td class="text-center">
+                                ${item.jumlah}
+                            </td>
+
+                            <td class="text-end">
+                                Rp ${Number(item.harga).toLocaleString('id-ID')}
+                            </td>
+
+                            <td class="text-end">
+                                Rp ${Number(item.subtotal).toLocaleString('id-ID')}
+                            </td>
+                        </tr>
+                    `;
+                            });
+
+                            html += `
+                    <tr class="table-success">
+                        <td colspan="4" class="text-end">
+                            <strong>Total</strong>
+                        </td>
+                        <td class="text-end">
+                            <strong>
+                                Rp ${Number(total).toLocaleString('id-ID')}
+                            </strong>
+                        </td>
+                    </tr>
+                `;
+                        }
 
                         $("#detailKeranjang").html(html);
                         $("#modalDetail").modal("show");
+                    },
+                    error: function(xhr) {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            text: "Gagal mengambil data keranjang!"
+                        });
+
+                        console.log(xhr.responseText);
                     }
                 });
 

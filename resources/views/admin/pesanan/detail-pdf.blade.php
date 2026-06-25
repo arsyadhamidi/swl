@@ -146,22 +146,37 @@
 
         <tr>
             <td><strong>Status</strong></td>
-            <td>: {{ $pesanans->status ?? '-' }}</td>
+            <td>
+
+                :
+
+                @if ($pesanans->status == 'Pending')
+                    Menunggu Konfirmasi
+                @elseif($pesanans->status == 'Diproses')
+                    Sedang Diproses
+                @elseif($pesanans->status == 'Selesai')
+                    Pesanan Selesai
+                @else
+                    Dibatalkan
+                @endif
+
+            </td>
         </tr>
 
     </table>
 
 
     <!-- TABEL PRODUK -->
-    <table class="table">
+    <table class="table" style="width: 100%">
 
         <thead>
             <tr>
                 <th width="40">No</th>
                 <th>Nama Barang</th>
-                <th width="80">Qty</th>
-                <th width="120">Harga</th>
-                <th width="120">Subtotal</th>
+                <th>Variasi</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Subtotal</th>
             </tr>
         </thead>
 
@@ -179,14 +194,22 @@
 
                 <tr>
 
-                    <td>{{ $loop->iteration }}</td>
-
                     <td>
-                        {{ $item->nm_barang ?? '-' }}
+                        {{ $loop->iteration }}
                     </td>
 
                     <td>
-                        {{ $item->jumlah ?? '0' }}
+                        <strong>{{ $item->nm_barang }}</strong>
+                    </td>
+
+                    <td>
+                        {{ $item->ukuran }}
+                        <br>
+                        {{ $item->warna }}
+                    </td>
+
+                    <td>
+                        {{ $item->jumlah }}
                     </td>
 
                     <td>

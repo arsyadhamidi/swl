@@ -53,7 +53,7 @@ class AdminKeranjangController extends Controller
                 $item->aksi = '
 <button type="button"
         class="btn btn-outline-primary btn-detail"
-        data-id="' . e($resultid) . '">
+        data-id="'.e($resultid).'">
     <i class="fas fa-eye"></i>
 </button>
 ';
@@ -93,7 +93,7 @@ class AdminKeranjangController extends Controller
         $pdf = PDF::loadView('admin.keranjang.export-pdf', ['keranjangs' => $data])
             ->setPaper('A4', 'landscape');
 
-        return $pdf->stream(Carbon::now()->format('YmdHis') . '-keranjag.pdf');
+        return $pdf->stream(Carbon::now()->format('YmdHis').'-keranjag.pdf');
     }
 
     public function generateexcel(Request $request)
@@ -117,15 +117,28 @@ class AdminKeranjangController extends Controller
 
         return Excel::download(
             new KeranjangExport($data),
-            Carbon::now()->format('YmdHis') . '-keranjang.xlsx'
+            Carbon::now()->format('YmdHis').'-keranjang.xlsx'
         );
     }
 
     public function keranjangdetail($id)
     {
-        $details = KeranjangDetail::join('barangs', 'keranjang_details.barang_id', '=', 'barangs.id')
+        $details = KeranjangDetail::join(
+            'barang_variasis',
+            'keranjang_details.barang_variasi_id',
+            '=',
+            'barang_variasis.id'
+        )
+            ->join(
+                'barangs',
+                'barang_variasis.barang_id',
+                '=',
+                'barangs.id'
+            )
             ->select(
                 'barangs.nm_barang',
+                'barang_variasis.ukuran',
+                'barang_variasis.warna',
                 'keranjang_details.jumlah',
                 'keranjang_details.harga',
                 'keranjang_details.subtotal'
