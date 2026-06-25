@@ -61,8 +61,6 @@
                                 <tr>
                                     <th style="width: 4%">No.</th>
                                     <th>Barang</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
                                     <th>Keterangan</th>
                                     <th>Kategori</th>
                                     <th>Aksi</th>
@@ -129,21 +127,6 @@
                     {
                         data: "nm_barang",
                         name: "nm_barang",
-                        defaultContent: "-",
-                    },
-                    {
-                        data: "harga",
-                        name: "harga",
-                        defaultContent: "-",
-                        render: function(data, type, row) {
-                            if (data == null) return "-";
-
-                            return "Rp " + new Intl.NumberFormat("id-ID").format(data);
-                        }
-                    },
-                    {
-                        data: "stok",
-                        name: "stok",
                         defaultContent: "-",
                     },
                     {

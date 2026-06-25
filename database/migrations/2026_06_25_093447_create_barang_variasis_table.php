@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('barang_variasis', function (Blueprint $table) {
             $table->integer('id')->autoIncrement();
+            $table->integer('barang_id');
             $table->string('ukuran', 10);
             $table->string('warna', 50);
             $table->decimal('harga', 12,2);

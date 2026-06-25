@@ -101,28 +101,47 @@
         <table>
             <thead>
                 <tr>
-                    <th colspan="5">LAPORAN DATA BARANG</th>
+                    <th colspan="6">LAPORAN DATA BARANG</th>
                 </tr>
                 <tr>
-                    <th style="width: 4%;">No.</th>
-                    <th style="text-align: left;">Barang</th>
-                    <th style="text-align: left;">Harga</th>
-                    <th style="text-align: left;">Stok</th>
-                    <th style="text-align: left;">Kategori</th>
+                    <th width="5%">No</th>
+                    <th width="30%">Nama Barang</th>
+                    <th width="20%">Kategori</th>
+                    <th width="10%">Variasi</th>
+                    <th width="10%">Stok</th>
+                    <th width="25%">Rentang Harga</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($barangs as $data)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td style="text-align: left;">{{ $data->nm_barang ?? '-' }}</td>
-                        <td style="text-align: left;">
-                            {{ $data->harga ? 'Rp ' . number_format($data->harga, 0, ',', '.') : '-' }}
+
+                        <td style="text-align:left">
+                            {{ $data->nm_barang }}
                         </td>
-                        <td style="text-align: left;">
-                            {{ $data->stok ?? '0' }}
+
+                        <td style="text-align:left">
+                            {{ $data->nm_kategori }}
                         </td>
-                        <td style="text-align: left;">{{ $data->nm_kategori ?? '-' }}</td>
+
+                        <td>
+                            {{ $data->total_variasi }}
+                        </td>
+
+                        <td>
+                            {{ $data->total_stok }}
+                        </td>
+
+                        <td style="text-align:left">
+                            @if ($data->harga_min == $data->harga_max)
+                                Rp {{ number_format($data->harga_min, 0, ',', '.') }}
+                            @else
+                                Rp {{ number_format($data->harga_min, 0, ',', '.') }}
+                                -
+                                Rp {{ number_format($data->harga_max, 0, ',', '.') }}
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

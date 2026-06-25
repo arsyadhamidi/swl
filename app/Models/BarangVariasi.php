@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class BarangVariasi extends Model
 {
     use HasFactory;
+
+    protected $guarded = [];
 }

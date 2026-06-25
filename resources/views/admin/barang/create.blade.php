@@ -7,7 +7,8 @@
         <div class="col-lg-12">
             <div class="mb-3">
                 <form action="{{ route('admin-barang.store') }}"
-                      method="POST" enctype="multipart/form-data">
+                      method="POST"
+                      enctype="multipart/form-data">
                     @csrf
                     <div class="card">
                         <div class="card-body">
@@ -21,36 +22,6 @@
                                                value="{{ old('nm_barang') }}"
                                                placeholder="Masukan nama barang">
                                         @error('nm_barang')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="mb-3">
-                                        <label>Harga Barang</label>
-                                        <input type="number"
-                                               name="harga"
-                                               class="form-control @error('harga') is-invalid @enderror"
-                                               value="{{ old('harga') }}"
-                                               placeholder="Masukan harga barang">
-                                        @error('harga')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="mb-3">
-                                        <label>Stok Barang</label>
-                                        <input type="number"
-                                               name="stok"
-                                               class="form-control @error('stok') is-invalid @enderror"
-                                               value="{{ old('stok') }}"
-                                               placeholder="Masukan stok barang">
-                                        @error('stok')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
@@ -102,6 +73,56 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-lg-12">
+                                    <hr>
+                                    <h5>Variasi Barang</h5>
+
+                                    <div id="variasi-container">
+                                        <div class="row variasi-item mb-2">
+                                            <div class="col-md-2">
+                                                <input type="text"
+                                                       name="ukuran[]"
+                                                       class="form-control"
+                                                       placeholder="Ukuran">
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <input type="text"
+                                                       name="warna[]"
+                                                       class="form-control"
+                                                       placeholder="Warna">
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <input type="number"
+                                                       name="harga[]"
+                                                       class="form-control"
+                                                       placeholder="Harga">
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <input type="number"
+                                                       name="stok[]"
+                                                       class="form-control"
+                                                       placeholder="Stok">
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <button type="button"
+                                                        class="btn btn-danger remove-variant">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="button"
+                                            id="add-variant"
+                                            class="btn btn-info mt-2">
+                                        <i class="fas fa-plus"></i>
+                                        Tambah Variasi
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
@@ -124,8 +145,73 @@
 @endsection
 @push('custom-script')
     <script>
-        $('#selectedKategori').select2({
-            theme: 'bootstrap4'
+        $(document).ready(function() {
+
+            $('#selectedKategori').select2({
+                theme: 'bootstrap4'
+            });
+
+            $('#add-variant').click(function() {
+
+                let html = `
+        <div class="row variasi-item mb-2">
+
+            <div class="col-md-2">
+                <input type="text"
+                    name="ukuran[]"
+                    class="form-control"
+                    placeholder="Ukuran">
+            </div>
+
+            <div class="col-md-2">
+                <input type="text"
+                    name="warna[]"
+                    class="form-control"
+                    placeholder="Warna">
+            </div>
+
+            <div class="col-md-3">
+                <input type="number"
+                    name="harga[]"
+                    class="form-control"
+                    placeholder="Harga">
+            </div>
+
+            <div class="col-md-3">
+                <input type="number"
+                    name="stok[]"
+                    class="form-control"
+                    placeholder="Stok">
+            </div>
+
+            <div class="col-md-2">
+                <button type="button"
+                        class="btn btn-danger remove-variant">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+
+        </div>
+        `;
+
+                $('#variasi-container').append(html);
+            });
+
+            $(document).on('click', '.remove-variant', function() {
+                $(this).closest('.variasi-item').remove();
+            });
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            @if (Session::has('success'))
+                toastr.success("{{ Session::get('success') }}");
+            @endif
+
+            @if (Session::has('error'))
+                toastr.error("{{ Session::get('error') }}");
+            @endif
         });
     </script>
 @endpush

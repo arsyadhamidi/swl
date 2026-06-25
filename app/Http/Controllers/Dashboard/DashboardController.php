@@ -8,7 +8,6 @@ use App\Models\Kategori;
 use App\Models\Keranjang;
 use App\Models\Pesanan;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -57,7 +56,8 @@ class DashboardController extends Controller
 
             // Kategori paling banyak dipesan
             $kategoriTerlaris = DB::table('detail_pesanans')
-                ->join('barangs', 'detail_pesanans.barang_id', '=', 'barangs.id')
+                ->join('barang_variasis', 'detail_pesanans.barang_variasi_id', '=', 'barang_variasis.id')
+                ->join('barangs', 'barang_variasis.barang_id', '=', 'barangs.id')
                 ->join('kategoris', 'barangs.kategori_id', '=', 'kategoris.id')
                 ->select(
                     'kategoris.nm_kategori',

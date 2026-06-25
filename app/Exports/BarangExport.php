@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\Barang;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
@@ -17,15 +16,23 @@ class BarangExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        // Map data to include country name
         return $this->data->map(function ($item) {
+
+            $rentangHarga =
+                $item->harga_min == $item->harga_max
+                ? 'Rp ' . number_format($item->harga_min, 0, ',', '.')
+                : 'Rp ' . number_format($item->harga_min, 0, ',', '.')
+                    . ' - Rp '
+                    . number_format($item->harga_max, 0, ',', '.');
+
             return [
-                'id' => $item->id,
-                'nm_barang' => $item->nm_barang,
-                'harga' => $item->harga,
-                'stok' => $item->stok,
-                'keterangan' => $item->ket_barang,
-                'kategori' => $item->nm_kategori,
+                'id'            => $item->id,
+                'nm_barang'     => $item->nm_barang,
+                'kategori'      => $item->nm_kategori,
+                'variasi'       => $item->total_variasi,
+                'stok'          => $item->total_stok,
+                'harga'         => $rentangHarga,
+                'keterangan'    => $item->ket_barang,
             ];
         });
     }
@@ -35,10 +42,11 @@ class BarangExport implements FromCollection, WithHeadings
         return [
             'ID',
             'Nama Barang',
-            'Harga',
-            'Stok',
-            'Keterangan',
             'Kategori',
+            'Jumlah Variasi',
+            'Total Stok',
+            'Rentang Harga',
+            'Keterangan',
         ];
     }
 }
