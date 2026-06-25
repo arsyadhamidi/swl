@@ -15,8 +15,6 @@ return new class extends Migration
             $table->integer('id')->autoIncrement();
             $table->integer('kategori_id');
             $table->string('nm_barang', 100);
-            $table->decimal('harga');
-            $table->integer('stok');
             $table->string('foto_barang');
             $table->text('ket_barang')->nullable();
             $table->timestamps();
