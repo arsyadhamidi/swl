@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Landing;
 
 use App\Http\Controllers\Controller;
 use App\Models\Barang;
+use App\Models\BarangVariasi;
 use App\Models\DetailPesanan;
 use App\Models\Kategori;
 use App\Models\Keranjang;
@@ -13,6 +14,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use PDF;
 
@@ -21,7 +23,32 @@ class LandingController extends Controller
     public function index()
     {
         $kategoris = Kategori::orderBy('id', 'desc')->get();
-        $barangs = Barang::orderBy('id', 'desc')->get();
+
+        $barangs = Barang::leftJoin(
+            'barang_variasis',
+            'barangs.id',
+            '=',
+            'barang_variasis.barang_id'
+        )
+            ->selectRaw('
+            barangs.*,
+            COUNT(barang_variasis.id) as total_variasi,
+            COALESCE(SUM(barang_variasis.stok),0) as total_stok,
+            MIN(barang_variasis.harga) as harga_min,
+            MAX(barang_variasis.harga) as harga_max
+        ')
+            ->groupBy(
+                'barangs.id',
+                'barangs.nm_barang',
+                'barangs.kategori_id',
+                'barangs.foto_barang',
+                'barangs.ket_barang',
+                'barangs.created_at',
+                'barangs.updated_at'
+            )
+            ->orderByDesc('barangs.id')
+            ->get();
+
         return view('landing.main.index', [
             'barangs' => $barangs,
             'kategoris' => $kategoris,
@@ -31,6 +58,7 @@ class LandingController extends Controller
     public function settingpelanggan()
     {
         $users = Auth::user();
+
         return view('landing.setting.akun.index', [
             'users' => $users,
         ]);
@@ -100,7 +128,7 @@ class LandingController extends Controller
             ],
             [
                 'foto_profile.required' => 'Foto profil wajib diunggah.',
-                'foto_profile.max'      => 'Ukuran foto profil maksimal 10 MB.',
+                'foto_profile.max' => 'Ukuran foto profil maksimal 10 MB.',
             ]
         );
 
@@ -135,44 +163,95 @@ class LandingController extends Controller
 
     public function showbarang($id)
     {
-        $barangs = Barang::join('kategoris', 'barangs.kategori_id', 'kategoris.id')
-            ->select([
+        $barangs = Barang::join(
+            'kategoris',
+            'barangs.kategori_id',
+            '=',
+            'kategoris.id'
+        )
+            ->select(
                 'barangs.*',
-                'kategoris.nm_kategori',
-            ])
+                'kategoris.nm_kategori'
+            )
             ->where('barangs.id', $id)
-            ->first();
+            ->firstOrFail();
+
+        $variasis = BarangVariasi::where(
+            'barang_id',
+            $id
+        )->get();
 
         return view('landing.barang.show', [
             'barangs' => $barangs,
+            'variasis' => $variasis,
         ]);
     }
 
     public function storebarang(Request $request)
     {
+        $request->validate([
+            'barang_id' => 'required',
+            'barang_variasi_id' => 'required',
+            'jumlah' => 'required|integer|min:1',
+        ], [
+            'barang_variasi_id.required' => 'Silahkan pilih variasi produk terlebih dahulu.',
+            'jumlah.required' => 'Jumlah pembelian wajib diisi.',
+            'jumlah.min' => 'Jumlah pembelian minimal 1.',
+        ]);
 
-        $carbons = Carbon::now();
         $users = Auth::user();
+        $carbons = Carbon::now();
         $action = $request->action;
+
+        $barangs = Barang::where(
+            'id',
+            $request->barang_id
+        )->firstOrFail();
+
+        $variasis = BarangVariasi::where(
+            'id',
+            $request->barang_variasi_id
+        )->firstOrFail();
+
+        // cek stok variasi
+        if ($variasis->stok < $request->jumlah) {
+
+            return back()->with(
+                'error',
+                'Maaf! Stok produk tidak mencukupi.'
+            );
+
+        }
+
+        $harga = $variasis->harga;
+
+        $totHarga = $harga * $request->jumlah;
+
         $buktiPembayaran = null;
-        $barangs = Barang::where('id', $request->barang_id)->firstOrFail();
-        $stokBarangs = $barangs->stok;
 
-        if (!$barangs) {
-            return back()->with('error', 'Maaf ! Data barang tidak ditemukan!');
+        if ($request->hasFile('bukti_pembayaran')) {
+
+            $buktiPembayaran = $request
+                ->file('bukti_pembayaran')
+                ->store('bukti_pembayaran');
+
         }
 
-        if ($stokBarangs < $request->jumlah) {
-            return back()->with('error', 'Maaf ! Stok barang tidak mencukupi');
-        }
-
-        if ($request->file('bukti_pembayaran')) {
-            $buktiPembayaran = $request->file('bukti_pembayaran')->store('bukti_pembayaran');
-        }
-
-        $totHarga = $barangs->harga * $request->jumlah;
-
+        /**
+         * CHECKOUT LANGSUNG
+         */
         if ($action == 'checkout') {
+
+            $request->validate([
+                'telp' => 'required|max:20',
+                'alamat_pengiriman' => 'required',
+                'bukti_pembayaran' => 'required',
+            ], [
+                'telp.required' => 'Nomor telepon wajib diisi.',
+                'alamat_pengiriman.required' => 'Alamat pengiriman wajib diisi.',
+                'bukti_pembayaran.required' => 'Bukti pembayaran wajib diupload.',
+            ]);
+
             $pesanans = Pesanan::create([
                 'users_id' => $users->id,
                 'tgl_pesanan' => $carbons,
@@ -185,41 +264,93 @@ class LandingController extends Controller
 
             DetailPesanan::create([
                 'pesanan_id' => $pesanans->id,
-                'barang_id' => $barangs->id,
+                'barang_variasi_id' => $variasis->id,
                 'jumlah' => $request->jumlah,
-                'harga' => $barangs->harga,
+                'harga' => $harga,
                 'subtotal' => $totHarga,
             ]);
 
-            // KURANGI STOK
-            $barangs->stok -= $request->jumlah;
-            $barangs->save();
+            // kurangi stok variasi
+            $variasis->decrement(
+                'stok',
+                $request->jumlah
+            );
 
-            return redirect()->route('pelanggan-barang.suksescheckout')->with('success', 'Selamat ! Anda berhasil melakukan pemesanan!');
-        } else {
+            return redirect()
+                ->route('pelanggan-barang.suksescheckout')
+                ->with(
+                    'success',
+                    'Selamat! Anda berhasil melakukan pemesanan.'
+                );
+        }
 
-            $keranjangs = Keranjang::firstOrCreate([
-                'users_id' => $users->id
-            ], [
-                'tanggal' => $carbons
+        /**
+         * MASUKKAN KE KERANJANG
+         */
+        $keranjangs = Keranjang::firstOrCreate(
+            [
+                'users_id' => $users->id,
+            ],
+            [
+                'tanggal' => $carbons,
+            ]
+        );
+
+        $detailKeranjang = KeranjangDetail::where(
+            'keranjang_id',
+            $keranjangs->id
+        )
+            ->where(
+                'barang_variasi_id',
+                $variasis->id
+            )
+            ->first();
+
+        if ($detailKeranjang) {
+
+            $jumlahBaru =
+                $detailKeranjang->jumlah +
+                $request->jumlah;
+
+            if ($jumlahBaru > $variasis->stok) {
+
+                return back()->with(
+                    'error',
+                    'Jumlah barang di keranjang melebihi stok tersedia.'
+                );
+
+            }
+
+            $detailKeranjang->update([
+                'jumlah' => $jumlahBaru,
+                'subtotal' => $jumlahBaru * $detailKeranjang->harga,
             ]);
+
+        } else {
 
             KeranjangDetail::create([
                 'keranjang_id' => $keranjangs->id,
-                'barang_id' => $barangs->id,
+                'barang_variasi_id' => $variasis->id,
                 'jumlah' => $request->jumlah,
-                'harga' => $barangs->harga,
+                'harga' => $harga,
                 'subtotal' => $totHarga,
             ]);
 
-            return redirect()->route('landing.produk')->with('success', 'Selamat ! Anda berhasil memasukan keranjang!');
         }
+
+        return redirect()
+            ->route('landing.produk')
+            ->with(
+                'success',
+                'Produk berhasil dimasukkan ke keranjang.'
+            );
     }
 
     public function pesanan()
     {
         $users = Auth::user();
         $pesanans = Pesanan::where('users_id', $users->id)->orderBy('id', 'desc')->get();
+
         return view('landing.setting.pesanan.index', [
             'users' => $users,
             'pesanans' => $pesanans,
@@ -245,6 +376,7 @@ class LandingController extends Controller
             'pesanans' => $pesanans,
             'detailPesanans' => $detailPesanans,
         ]);
+
         // return $pdf->download('detail-pesanan.pdf');
         return $pdf->stream('detail-pesanan.pdf');
     }
@@ -253,26 +385,59 @@ class LandingController extends Controller
     {
         $users = Auth::user();
 
-        $keranjangs = Keranjang::where('users_id', $users->id)->first();
+        $keranjangs = Keranjang::where(
+            'users_id',
+            $users->id
+        )->first();
 
-        if (!$keranjangs) {
-            return view('landing.keranjang.index', [
-                'keranjangs' => null,
-                'detailKeranjangs' => collect([])
-            ]);
+        if (! $keranjangs) {
+
+            return view(
+                'landing.keranjang.index',
+                [
+                    'keranjangs' => null,
+                    'detailKeranjangs' => collect([]),
+                ]
+            );
         }
 
-        $detailKeranjangs = KeranjangDetail::join('barangs', 'keranjang_details.barang_id', '=', 'barangs.id')
+        $detailKeranjangs = KeranjangDetail::join(
+            'barang_variasis',
+            'keranjang_details.barang_variasi_id',
+            '=',
+            'barang_variasis.id'
+        )
+            ->join(
+                'barangs',
+                'barang_variasis.barang_id',
+                '=',
+                'barangs.id'
+            )
             ->select([
                 'keranjang_details.*',
+
                 'barangs.nm_barang',
-                'barangs.harga'
+                'barangs.foto_barang',
+
+                'barang_variasis.ukuran',
+                'barang_variasis.warna',
             ])
-            ->where('keranjang_details.keranjang_id', $keranjangs->id)
-            ->orderBy('keranjang_details.id', 'desc')
+            ->where(
+                'keranjang_details.keranjang_id',
+                $keranjangs->id
+            )
+            ->orderByDesc(
+                'keranjang_details.id'
+            )
             ->get();
 
-        return view('landing.keranjang.index', compact('keranjangs', 'detailKeranjangs'));
+        return view(
+            'landing.keranjang.index',
+            compact(
+                'keranjangs',
+                'detailKeranjangs'
+            )
+        );
     }
 
     public function suksescheckout()
@@ -284,15 +449,37 @@ class LandingController extends Controller
     {
         $search = $request->search;
 
-        $barangs = Barang::when($search, function ($query) use ($search) {
-            $query->where('nm_barang', 'like', '%' . $search . '%');
-        })
-            ->orderBy('id', 'desc')
+        $barangs = Barang::leftJoin(
+            'barang_variasis',
+            'barangs.id',
+            '=',
+            'barang_variasis.barang_id'
+        )
+            ->when($search, function ($query) use ($search) {
+                $query->where('barangs.nm_barang', 'like', '%'.$search.'%');
+            })
+            ->selectRaw('
+            barangs.*,
+            COUNT(barang_variasis.id) as total_variasi,
+            COALESCE(SUM(barang_variasis.stok),0) as total_stok,
+            MIN(barang_variasis.harga) as harga_min,
+            MAX(barang_variasis.harga) as harga_max
+        ')
+            ->groupBy(
+                'barangs.id',
+                'barangs.kategori_id',
+                'barangs.nm_barang',
+                'barangs.foto_barang',
+                'barangs.ket_barang',
+                'barangs.created_at',
+                'barangs.updated_at'
+            )
+            ->orderByDesc('barangs.id')
             ->get();
 
         return view('landing.barang.index', [
             'barangs' => $barangs,
-            'search' => $search
+            'search' => $search,
         ]);
     }
 
@@ -305,80 +492,146 @@ class LandingController extends Controller
 
     public function checkout(Request $request)
     {
-
         $request->validate([
             'bukti_pembayaran' => 'required|mimes:png,jpg,jpeg|max:10248',
-            'telp' => 'required|max:20',
+            'telp' => 'required|max:20|regex:/^[0-9+]+$/',
             'alamat_pengiriman' => 'required',
-            'tot_harga' => 'required',
+            'tot_harga' => 'required|numeric',
         ], [
             'bukti_pembayaran.required' => 'Bukti pembayaran wajib diunggah.',
-            'bukti_pembayaran.mimes' => 'Bukti pembayaran harus berupa file: png, jpg, atau jpeg.',
-            'bukti_pembayaran.max' => 'Ukuran file maksimal 10MB.',
+            'bukti_pembayaran.mimes' => 'Bukti pembayaran harus berupa file png, jpg, atau jpeg.',
+            'bukti_pembayaran.max' => 'Ukuran file maksimal 10 MB.',
 
             'telp.required' => 'Nomor telepon wajib diisi.',
             'telp.max' => 'Nomor telepon maksimal 20 karakter.',
+            'telp.regex' => 'Nomor telepon hanya boleh berisi angka dan tanda +.',
 
             'alamat_pengiriman.required' => 'Alamat pengiriman wajib diisi.',
 
             'tot_harga.required' => 'Total harga tidak boleh kosong.',
+            'tot_harga.numeric' => 'Total harga tidak valid.',
         ]);
 
-        $carbons = Carbon::now();
-        $users = Auth::user();
-        $totHarga = str_replace(['Rp', '.', ' '], '', $request->tot_harga);
+        DB::beginTransaction();
 
-        // Ambil keranjang
-        $keranjangs = Keranjang::where('users_id', $users->id)->first();
-        if (!$keranjangs) {
-            return back()->with('error', 'Keranjang kosong, silahkan pilih barang terlebih dahulu!');
-        }
+        try {
 
-        $detailKeranjangs = KeranjangDetail::where('keranjang_id', $keranjangs->id)->get();
-        if ($detailKeranjangs->isEmpty()) {
-            return back()->with('error', 'Keranjang kosong, silahkan pilih barang terlebih dahulu!');
-        }
+            $users = Auth::user();
 
-        // Upload bukti pembayaran jika ada
-        $buktiPembayaran = null;
-        if ($request->hasFile('bukti_pembayaran')) {
-            $file = $request->file('bukti_pembayaran');
-            $buktiPembayaran = $file->store('bukti_pembayaran', 'public');
-        }
+            $keranjangs = Keranjang::where(
+                'users_id',
+                $users->id
+            )->first();
 
-        // Buat pesanan
-        $pesanan = Pesanan::create([
-            'users_id' => $users->id,
-            'tgl_pesanan' => $carbons,
-            'tot_harga' => $totHarga,
-            'alamat_pengiriman' => $request->alamat_pengiriman,
-            'telp' => $request->telp,
-            'bukti_pembayaran' => $buktiPembayaran,
-            'status' => 'Pending',
-        ]);
+            if (! $keranjangs) {
 
-        // Simpan detail pesanan & kurangi stok
-        foreach ($detailKeranjangs as $details) {
-            $barang = Barang::findOrFail($details->barang_id);
+                throw new \Exception(
+                    'Keranjang kosong, silahkan pilih barang terlebih dahulu!'
+                );
+            }
 
-            DetailPesanan::create([
-                'pesanan_id' => $pesanan->id,
-                'barang_id' => $barang->id,
-                'jumlah' => $details->jumlah,          // gunakan jumlah di detail
-                'harga' => $barang->harga,
-                'subtotal' => $barang->harga * $details->jumlah,
+            $detailKeranjangs = KeranjangDetail::where(
+                'keranjang_id',
+                $keranjangs->id
+            )->get();
+
+            if ($detailKeranjangs->isEmpty()) {
+
+                throw new \Exception(
+                    'Keranjang kosong, silahkan pilih barang terlebih dahulu!'
+                );
+            }
+
+            // Upload bukti pembayaran
+            $buktiPembayaran = null;
+
+            if ($request->hasFile('bukti_pembayaran')) {
+
+                $buktiPembayaran = $request
+                    ->file('bukti_pembayaran')
+                    ->store('bukti_pembayaran', 'public');
+            }
+
+            // Buat pesanan
+            $pesanan = Pesanan::create([
+                'users_id' => $users->id,
+                'tgl_pesanan' => now(),
+                'tot_harga' => $request->tot_harga,
+                'alamat_pengiriman' => $request->alamat_pengiriman,
+                'telp' => $request->telp,
+                'bukti_pembayaran' => $buktiPembayaran,
+                'status' => 'Pending',
             ]);
 
-            // Kurangi stok barang
-            $barang->decrement('stok', $details->jumlah);
+            foreach ($detailKeranjangs as $details) {
+
+                $variasi = BarangVariasi::where(
+                    'id',
+                    $details->barang_variasi_id
+                )->first();
+
+                if (! $variasi) {
+
+                    throw new \Exception(
+                        'Variasi produk tidak ditemukan.'
+                    );
+                }
+
+                // Cek stok
+                if ($variasi->stok < $details->jumlah) {
+
+                    throw new \Exception(
+                        'Stok produk ukuran '.
+                        $variasi->ukuran.
+                        ' warna '.
+                        $variasi->warna.
+                        ' tidak mencukupi.'
+                    );
+                }
+
+                // Simpan detail pesanan
+                DetailPesanan::create([
+                    'pesanan_id' => $pesanan->id,
+                    'barang_variasi_id' => $details->barang_variasi_id,
+                    'jumlah' => $details->jumlah,
+                    'harga' => $details->harga,
+                    'subtotal' => $details->subtotal,
+                ]);
+
+                // Kurangi stok variasi
+                $variasi->decrement(
+                    'stok',
+                    $details->jumlah
+                );
+            }
+
+            // Hapus detail keranjang
+            KeranjangDetail::where(
+                'keranjang_id',
+                $keranjangs->id
+            )->delete();
+
+            // Hapus keranjang
+            $keranjangs->delete();
+
+            DB::commit();
+
+            return redirect()
+                ->route('pelanggan-barang.suksescheckout')
+                ->with(
+                    'success',
+                    'Selamat! Anda berhasil melakukan checkout.'
+                );
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return back()
+                ->with(
+                    'error',
+                    $e->getMessage()
+                );
         }
-
-        KeranjangDetail::where('keranjang_id', $keranjangs->id)->delete();
-
-        // Hapus keranjang
-        Keranjang::where('users_id', $users->id)->delete();
-
-        return redirect()->route('pelanggan-barang.suksescheckout')
-            ->with('success', 'Selamat! Anda berhasil melakukan checkout.');
     }
 }

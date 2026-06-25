@@ -77,7 +77,31 @@ class DashboardController extends Controller
         } else {
 
             $kategoris = Kategori::orderBy('id', 'desc')->get();
-            $barangs = Barang::orderBy('id', 'desc')->get();
+
+            $barangs = Barang::leftJoin(
+                'barang_variasis',
+                'barangs.id',
+                '=',
+                'barang_variasis.barang_id'
+            )
+                ->selectRaw('
+            barangs.*,
+            COUNT(barang_variasis.id) as total_variasi,
+            COALESCE(SUM(barang_variasis.stok),0) as total_stok,
+            MIN(barang_variasis.harga) as harga_min,
+            MAX(barang_variasis.harga) as harga_max
+        ')
+                ->groupBy(
+                    'barangs.id',
+                    'barangs.nm_barang',
+                    'barangs.kategori_id',
+                    'barangs.foto_barang',
+                    'barangs.ket_barang',
+                    'barangs.created_at',
+                    'barangs.updated_at'
+                )
+                ->orderByDesc('barangs.id')
+                ->get();
 
             return view('landing.main.index', [
                 'barangs' => $barangs,

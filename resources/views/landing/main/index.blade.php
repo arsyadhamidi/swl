@@ -106,29 +106,34 @@
     </section>
 
     {{--  Barang  --}}
-    <section class="section"
+    <section class="section py-5"
              id="produk">
 
         <div class="container">
 
-            <h2 class="text-center mb-5">Produk Terbaru</h2>
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Produk Terbaru</h2>
+                <p class="text-muted">
+                    Koleksi terbaik SWL Collection
+                </p>
+            </div>
 
             <div class="row">
 
-                @forelse ($barangs as $barang)
-                    <div class="col-md-3 mb-4">
+                @forelse($barangs as $barang)
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
 
-                        <div class="card product-card h-100 shadow-sm">
+                        <div class="card border-0 shadow-sm h-100 product-card">
 
                             <div class="position-relative">
 
                                 <img src="{{ asset('storage/' . $barang->foto_barang) }}"
                                      class="card-img-top"
-                                     style="height:230px; object-fit:cover;">
+                                     style="height:280px;object-fit:cover;">
 
-                                @if ($barang->stok > 0)
+                                @if ($barang->total_stok > 0)
                                     <span class="badge bg-success position-absolute top-0 start-0 m-2">
-                                        Stok {{ $barang->stok }}
+                                        Stok {{ $barang->total_stok }}
                                     </span>
                                 @else
                                     <span class="badge bg-danger position-absolute top-0 start-0 m-2">
@@ -138,26 +143,39 @@
 
                             </div>
 
-                            <div class="card-body text-center d-flex flex-column">
+                            <div class="card-body d-flex flex-column">
 
-                                <h6 class="mb-2">
-                                    {{ $barang->nm_barang ?? '-' }}
+                                <h6 class="fw-bold mb-2">
+                                    {{ $barang->nm_barang }}
                                 </h6>
 
-                                <p class="text-danger fw-bold mb-3">
-                                    Rp {{ number_format($barang->harga, 0, ',', '.') }}
-                                </p>
+                                <small class="text-muted mb-2">
+                                    {{ $barang->total_variasi }} Variasi
+                                </small>
 
-                                @if ($barang->stok > 0)
-                                    <a href="{{ route('pelanggan-barang.showbarang', $barang->id ?? '') }}" class="btn btn-sm btn-primary mt-auto">
-                                        Beli
-                                    </a>
-                                @else
-                                    <button class="btn btn-sm btn-secondary mt-auto"
-                                            disabled>
-                                        Stok Habis
-                                    </button>
-                                @endif
+                                <div class="mb-3">
+
+                                    @if ($barang->harga_min == $barang->harga_max)
+                                        <span class="text-danger fw-bold">
+                                            Rp {{ number_format($barang->harga_min, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-danger fw-bold">
+                                            Rp {{ number_format($barang->harga_min, 0, ',', '.') }}
+                                            -
+                                            Rp {{ number_format($barang->harga_max, 0, ',', '.') }}
+                                        </span>
+                                    @endif
+
+                                </div>
+
+                                <a href="{{ route('pelanggan-barang.showbarang', $barang->id) }}"
+                                   class="btn btn-primary mt-auto">
+
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Lihat Detail
+
+                                </a>
 
                             </div>
 
@@ -171,7 +189,7 @@
 
                         <div class="text-center py-5">
 
-                            <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png"
+                            <img src="{{ asset('images/foto-profile.png') }}"
                                  width="120"
                                  class="mb-3">
 

@@ -1,181 +1,273 @@
 @extends('landing.layout.master')
 
 @section('content')
-    <section class="section">
+    <section class="section py-5">
         <div class="container">
 
-            <div class="row">
+            ```
+            <div class="row g-4">
 
-                {{-- Foto Produk --}}
-                <div class="col-md-5">
+                {{-- FOTO PRODUK --}}
+                <div class="col-lg-5">
 
-                    <div class="card product-card">
+                    <div class="card border-0 shadow-sm">
 
                         <img src="{{ asset('storage/' . $barangs->foto_barang) }}"
-                             class="img-fluid"
-                             alt="{{ $barangs->nm_barang }}">
+                             class="img-fluid rounded"
+                             alt="{{ $barangs->nm_barang }}"
+                             style="width:100%;height:500px;object-fit:cover;">
 
                     </div>
 
                 </div>
 
-                {{-- Detail Produk --}}
-                <div class="col-md-7">
+                {{-- DETAIL PRODUK --}}
+                <div class="col-lg-7">
 
-                    <h2 class="mb-3">{{ $barangs->nm_barang }}</h2>
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
 
-                    <p class="text-muted">
-                        Kategori :
-                        <b>{{ $barangs->nm_kategori ?? '-' }}</b>
-                    </p>
+                            <h2 class="fw-bold">
+                                {{ $barangs->nm_barang }}
+                            </h2>
 
-                    <h3 class="text-danger mb-3">
-                        Rp {{ number_format($barangs->harga, 0, ',', '.') }}
-                    </h3>
+                            <p class="text-muted mb-2">
+                                Kategori :
+                                <strong>{{ $barangs->nm_kategori }}</strong>
+                            </p>
 
-                    <p>
-                        Stok :
-                        <span class="badge bg-success">
-                            {{ $barangs->stok }}
-                        </span>
-                    </p>
+                            <h3 class="text-danger fw-bold mb-3"
+                                id="hargaBarang">
+                                Pilih Variasi
+                            </h3>
 
-                    <hr>
+                            <p>
+                                Stok :
+                                <span class="badge bg-success"
+                                      id="stokBarang">
+                                    -
+                                </span>
+                            </p>
 
-                    <p>
-                        {{ $barangs->ket_barang ?? 'Tidak ada deskripsi produk.' }}
-                    </p>
+                            <hr>
 
-                    <hr>
+                            <p>
+                                {{ $barangs->ket_barang ?? 'Tidak ada deskripsi produk.' }}
+                            </p>
 
-                    {{-- Form Pesan --}}
-                    <form action="{{ route('pelanggan-barang.storebarang') }}"
-                          method="POST"
-                          enctype="multipart/form-data">
-                        @csrf
+                            <hr>
 
-                        <input type="hidden"
-                               name="barang_id"
-                               value="{{ $barangs->id }}">
+                            <form action="{{ route('pelanggan-barang.storebarang') }}"
+                                  method="POST"
+                                  enctype="multipart/form-data">
 
-                        <div class="row">
+                                @csrf
 
-                            <div class="col-md-4">
+                                <input type="hidden"
+                                       name="barang_id"
+                                       value="{{ $barangs->id }}">
 
-                                <label>Jumlah</label>
+                                <input type="hidden"
+                                       name="barang_variasi_id"
+                                       id="barang_variasi_id">
 
-                                <input type="number"
-                                       name="jumlah"
-                                       class="form-control"
-                                       min="1"
-                                       max="{{ $barangs->stok ?? '1' }}"
-                                       value="1"
-                                       required>
+                                {{-- VARIASI --}}
+                                <div class="mb-3">
 
-                            </div>
+                                    <label class="fw-bold">
+                                        Pilih Variasi
+                                    </label>
+
+                                    <select id="selectedVariasi"
+                                            class="form-control"
+                                            required>
+
+                                        <option value="">
+                                            -- Pilih Ukuran & Warna --
+                                        </option>
+
+                                        @foreach ($variasis as $variasi)
+                                            <option value="{{ $variasi->id }}"
+                                                    data-harga="{{ $variasi->harga }}"
+                                                    data-stok="{{ $variasi->stok }}">
+
+                                                Ukuran {{ $variasi->ukuran }}
+                                                -
+                                                {{ $variasi->warna }}
+
+                                            </option>
+                                        @endforeach
+
+                                    </select>
+
+                                </div>
+
+                                {{-- JUMLAH --}}
+                                <div class="mb-3">
+
+                                    <label>Jumlah</label>
+
+                                    <input type="number"
+                                           name="jumlah"
+                                           id="jumlahBarang"
+                                           class="form-control"
+                                           min="1"
+                                           value="1"
+                                           max="1"
+                                           required>
+
+                                </div>
+
+                                {{-- CHECKOUT --}}
+                                <div id="checkout-form"
+                                     style="display:none;">
+
+                                    <div class="mb-3">
+
+                                        <label>No Telp</label>
+
+                                        <input type="text"
+                                               name="telp"
+                                               class="form-control @error('telp') is-invalid @enderror"
+                                               value="{{ old('telp') }}">
+
+                                        @error('telp')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        <label>Alamat Pengiriman</label>
+
+                                        <textarea name="alamat_pengiriman"
+                                                  class="form-control @error('alamat_pengiriman') is-invalid @enderror"
+                                                  rows="3">{{ old('alamat_pengiriman') }}</textarea>
+
+                                        @error('alamat_pengiriman')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        <label>Bukti Pembayaran</label>
+
+                                        <input type="file"
+                                               name="bukti_pembayaran"
+                                               class="form-control @error('bukti_pembayaran') is-invalid @enderror">
+
+                                        @error('bukti_pembayaran')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+
+                                    </div>
+
+                                </div>
+
+                                <div class="d-flex gap-2 mt-4">
+
+                                    <button type="submit"
+                                            name="action"
+                                            value="cart"
+                                            class="btn btn-warning">
+
+                                        🛒 Masukkan Keranjang
+
+                                    </button>
+
+                                    <button type="submit"
+                                            name="action"
+                                            value="checkout"
+                                            class="btn btn-danger">
+
+                                        ⚡ Pesan Sekarang
+
+                                    </button>
+
+                                    <a href="{{ url('/') }}"
+                                       class="btn btn-outline-secondary">
+
+                                        Kembali
+
+                                    </a>
+
+                                </div>
+
+                            </form>
 
                         </div>
-
-                        {{-- FORM CHECKOUT --}}
-                        <div id="checkout-form"
-                             style="display:none;"
-                             class="mt-4">
-
-                            <div class="mb-3">
-                                <label>No Telp</label>
-                                <input type="text"
-                                       name="telp"
-                                       class="form-control @error('telp') is-invalid @enderror"
-                                       placeholder="Contoh: 08123456789" value="{{ old('telp') }}">
-                                @error('telp')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Alamat Pengiriman</label>
-                                <textarea name="alamat_pengiriman"
-                                          class="form-control @error('alamat_pengiriman') is-invalid @enderror"
-                                          rows="3"
-                                          placeholder="Masukkan alamat lengkap">{{ old('alamat_pengiriman') }}</textarea>
-                                @error('alamat_pengiriman')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Bukti Pembayaran</label>
-                                <input type="file"
-                                       name="bukti_pembayaran"
-                                       class="form-control @error('bukti_pembayaran') is-invalid @enderror">
-                                @error('bukti_pembayaran')
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-                                @enderror
-                            </div>
-
-                        </div>
-
-                        <div class="mt-4 d-flex gap-2">
-
-                            {{-- Tombol Keranjang --}}
-                            <button type="submit"
-                                    name="action"
-                                    value="cart"
-                                    class="btn btn-warning px-4">
-                                🛒 Masukkan Keranjang
-                            </button>
-
-                            {{-- Tombol Pesan Sekarang --}}
-                            <button type="submit"
-                                    name="action"
-                                    value="checkout"
-                                    class="btn btn-danger px-4">
-                                ⚡ Pesan Sekarang
-                            </button>
-
-                            <a href="{{ url('/') }}"
-                               class="btn btn-outline-secondary px-4">
-                                Kembali
-                            </a>
-
-                        </div>
-
-                    </form>
+                    </div>
 
                 </div>
 
             </div>
 
         </div>
+        ```
+
     </section>
 @endsection
+
 @push('custom-script')
     <script>
-        let checkoutClicked = false;
+        $('#selectedVariasi').change(function() {
 
-        document.querySelector('button[value="checkout"]').addEventListener('click', function(e) {
+            let selected = $(this).find(':selected');
 
-            if (!checkoutClicked) {
+            let harga = selected.data('harga');
+            let stok = selected.data('stok');
+            let id = selected.val();
 
-                e.preventDefault(); // hentikan submit
+            $('#barang_variasi_id').val(id);
 
-                document.getElementById('checkout-form').style.display = 'block';
+            if (id) {
 
-                checkoutClicked = true;
+                $('#hargaBarang').html(
+                    'Rp ' + Number(harga).toLocaleString('id-ID')
+                );
+
+                $('#stokBarang').text(stok);
+
+                $('#jumlahBarang')
+                    .attr('max', stok)
+                    .val(1);
+
+            } else {
+
+                $('#hargaBarang').text('Pilih Variasi');
+                $('#stokBarang').text('-');
 
             }
 
         });
 
-        document.querySelector('button[value="cart"]').addEventListener('click', function() {
+        let checkoutClicked = false;
 
-            document.getElementById('checkout-form').style.display = 'none';
+        $('button[value="checkout"]').click(function(e) {
+
+            if (!checkoutClicked) {
+
+                e.preventDefault();
+
+                $('#checkout-form').slideDown();
+
+                checkoutClicked = true;
+            }
+
+        });
+
+        $('button[value="cart"]').click(function() {
+
+            $('#checkout-form').hide();
 
         });
     </script>

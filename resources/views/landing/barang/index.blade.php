@@ -61,48 +61,61 @@
             <div class="row">
 
                 @forelse($barangs as $barang)
-                    <div class="col-lg-3 col-md-4 col-6 mb-4">
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
 
-                        <div class="card product-card h-100 border-0 shadow-sm">
+                        <div class="card border-0 shadow-sm h-100 product-card">
 
-                            {{-- FOTO PRODUK --}}
-                            <div class="product-img">
+                            <div class="position-relative">
 
                                 <img src="{{ asset('storage/' . $barang->foto_barang) }}"
                                      class="card-img-top"
-                                     alt="{{ $barang->nm_barang }}">
+                                     style="height:280px;object-fit:cover;">
+
+                                @if ($barang->total_stok > 0)
+                                    <span class="badge bg-success position-absolute top-0 start-0 m-2">
+                                        Stok {{ $barang->total_stok }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                                        Stok Habis
+                                    </span>
+                                @endif
 
                             </div>
 
+                            <div class="card-body d-flex flex-column">
 
-                            <div class="card-body">
-
-                                {{-- NAMA PRODUK --}}
-                                <h6 class="product-title">
+                                <h6 class="fw-bold mb-2">
                                     {{ $barang->nm_barang }}
                                 </h6>
 
+                                <small class="text-muted mb-2">
+                                    {{ $barang->total_variasi }} Variasi
+                                </small>
 
-                                {{-- HARGA --}}
-                                <div class="product-price mb-3">
+                                <div class="mb-3">
 
-                                    Rp {{ number_format($barang->harga, 0, ',', '.') }}
-
-                                </div>
-
-
-                                {{-- BUTTON --}}
-                                <div class="d-grid">
-
-                                    <a href="{{ route('pelanggan-barang.showbarang', $barang->id ?? '') }}"
-                                       class="btn btn-outline-primary btn-sm">
-
-                                        <i class="fas fa-eye"></i>
-                                        Lihat Detail
-
-                                    </a>
+                                    @if ($barang->harga_min == $barang->harga_max)
+                                        <span class="text-danger fw-bold">
+                                            Rp {{ number_format($barang->harga_min, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-danger fw-bold">
+                                            Rp {{ number_format($barang->harga_min, 0, ',', '.') }}
+                                            -
+                                            Rp {{ number_format($barang->harga_max, 0, ',', '.') }}
+                                        </span>
+                                    @endif
 
                                 </div>
+
+                                <a href="{{ route('pelanggan-barang.showbarang', $barang->id) }}"
+                                   class="btn btn-primary mt-auto">
+
+                                    <i class="fas fa-shopping-bag"></i>
+                                    Lihat Detail
+
+                                </a>
 
                             </div>
 
@@ -112,11 +125,21 @@
 
                 @empty
 
-                    <div class="col-lg-12 text-center">
+                    <div class="col-12">
 
-                        <p class="text-muted">
-                            Produk belum tersedia
-                        </p>
+                        <div class="text-center py-5">
+
+                            <img src="{{ asset('images/foto-profile.png') }}"
+                                 width="120"
+                                 class="mb-3">
+
+                            <h5>Produk Belum Tersedia</h5>
+
+                            <p class="text-muted">
+                                Saat ini belum ada produk yang ditampilkan.
+                            </p>
+
+                        </div>
 
                     </div>
                 @endforelse
