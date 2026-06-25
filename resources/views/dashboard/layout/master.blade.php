@@ -141,7 +141,7 @@
                             @endif
                             <p>
                                 {{ Auth()->user()->name ?? '-' }}
-                                <small>SWL Collection. {{ date('Y') }}</small>
+                                <small>SWL Kids. {{ date('Y') }}</small>
                             </p>
                         </li>
                         <!-- Menu Body -->
@@ -166,7 +166,7 @@
                 <img src="{{ asset('images/logo-orang.png') }}"
                      alt="AdminLTE Logo"
                      class="brand-image">
-                <span class="brand-text font-weight-bold text-white">SWL Collection</span>
+                <span class="brand-text font-weight-bold text-white">SWL Kids</span>
             </a>
 
             <!-- Sidebar -->
@@ -269,7 +269,7 @@
         </div>
         <!-- /.content-wrapper -->
         <footer class="main-footer">
-            <strong>Copyright &copy; 2026 <a href="{{ route('dashboard.index') }}">SWL Collection</a>.</strong>
+            <strong>Copyright &copy; 2026 <a href="{{ route('dashboard.index') }}">SWL Kids</a>.</strong>
             All rights reserved.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Version</b> 1.0.0
