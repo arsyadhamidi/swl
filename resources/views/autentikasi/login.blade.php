@@ -6,7 +6,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Login | SWL Collection</title>
+    <title>Login | SWL Kids</title>
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
@@ -178,7 +178,7 @@
             <img src="{{ asset('images/logo.png') }}"
                  alt="logo">
 
-            <h2>SWL Collection</h2>
+            <h2>SWL Kids</h2>
 
             <p>E-Commerce Fashion Store</p>
 
