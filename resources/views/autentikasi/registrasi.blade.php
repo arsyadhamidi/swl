@@ -36,12 +36,13 @@
 
         .register-container {
             display: flex;
-            width: 900px;
-            height: 540px;
-            background: white;
+            width: 950px;
+            max-width: 95%;
+            min-height: 650px;
+            background: #fff;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .15);
         }
 
         /* Left */
@@ -168,6 +169,26 @@
             }
 
         }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 5px;
+            transition: 0.3s;
+            resize: vertical;
+            /* hanya bisa diubah tinggi */
+            min-height: 120px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-group textarea:focus {
+            border-color: #ff6f91;
+            outline: none;
+            box-shadow: 0 0 5px rgba(255, 111, 145, 0.3);
+        }
     </style>
 
 </head>
@@ -247,6 +268,21 @@
                                required
                                placeholder="Cth: +62813xxxx">
                         @error('telp')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="input-group">
+                        <label>Alamat</label>
+
+                        <textarea name="alamat"
+                                  class="@error('alamat') is-invalid @enderror"
+                                  placeholder="Masukkan alamat lengkap"
+                                  required>{{ old('alamat') }}</textarea>
+
+                        @error('alamat')
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>

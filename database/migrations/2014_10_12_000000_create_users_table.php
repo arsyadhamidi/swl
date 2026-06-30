@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('duplicate');
             $table->string('telp', 20);
             $table->integer('level_id');
+            $table->text('alamat')->null();
             $table->string('foto_profile')->nullable();
             $table->rememberToken();
             $table->timestamps();

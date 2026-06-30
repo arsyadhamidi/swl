@@ -49,6 +49,7 @@ class RegistrasiController extends Controller
             'password' => bcrypt($request->password),
             'duplicate' => $request->password,
             'telp' => $request->telp,
+            'alamat' => $request->alamat,
             'email_verified_at' => $carbons,
             'level_id' => '2',
         ]);
