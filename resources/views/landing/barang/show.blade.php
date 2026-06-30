@@ -4,7 +4,6 @@
     <section class="section py-5">
         <div class="container">
 
-            ```
             <div class="row g-4">
 
                 {{-- FOTO PRODUK --}}
@@ -72,33 +71,49 @@
                                        id="barang_variasi_id">
 
                                 {{-- VARIASI --}}
-                                <div class="mb-3">
+                                <div class="mb-4">
 
-                                    <label class="fw-bold">
+                                    <label class="fw-bold mb-2 d-block">
                                         Pilih Variasi
                                     </label>
 
-                                    <select id="selectedVariasi"
-                                            class="form-control"
-                                            required>
-
-                                        <option value="">
-                                            -- Pilih Ukuran & Warna --
-                                        </option>
+                                    <div class="row g-3">
 
                                         @foreach ($variasis as $variasi)
-                                            <option value="{{ $variasi->id }}"
-                                                    data-harga="{{ $variasi->harga }}"
-                                                    data-stok="{{ $variasi->stok }}">
+                                            <div class="col-md-6">
 
-                                                Ukuran {{ $variasi->ukuran }}
-                                                -
-                                                {{ $variasi->warna }}
+                                                <div class="card variasi-card h-100"
+                                                     data-id="{{ $variasi->id }}"
+                                                     data-harga="{{ $variasi->harga }}"
+                                                     data-stok="{{ $variasi->stok }}">
 
-                                            </option>
+                                                    <div class="card-body">
+
+                                                        <h6 class="fw-bold mb-2">
+                                                            {{ $variasi->ukuran }}
+                                                        </h6>
+
+                                                        <p class="mb-1">
+                                                            🎨 {{ $variasi->warna }}
+                                                        </p>
+
+                                                        <h6 class="text-danger mb-1">
+                                                            Rp {{ number_format($variasi->harga, 0, ',', '.') }}
+                                                        </h6>
+
+                                                        <small class="text-success">
+                                                            Stok :
+                                                            {{ $variasi->stok }}
+                                                        </small>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
                                         @endforeach
 
-                                    </select>
+                                    </div>
 
                                 </div>
 
@@ -129,7 +144,7 @@
                                         <input type="text"
                                                name="telp"
                                                class="form-control @error('telp') is-invalid @enderror"
-                                               value="{{ old('telp') }}">
+                                               value="{{ old('telp', Auth::user()->telp ?? '0') }}">
 
                                         @error('telp')
                                             <div class="invalid-feedback">
@@ -145,7 +160,7 @@
 
                                         <textarea name="alamat_pengiriman"
                                                   class="form-control @error('alamat_pengiriman') is-invalid @enderror"
-                                                  rows="3">{{ old('alamat_pengiriman') }}</textarea>
+                                                  rows="3">{{ old('alamat_pengiriman', Auth::user()->alamat ?? '-') }}</textarea>
 
                                         @error('alamat_pengiriman')
                                             <div class="invalid-feedback">
@@ -212,44 +227,44 @@
             </div>
 
         </div>
-        ```
 
     </section>
 @endsection
 
 @push('custom-script')
     <script>
-        $('#selectedVariasi').change(function() {
+        $('.variasi-card').click(function() {
 
-            let selected = $(this).find(':selected');
+            $('.variasi-card').removeClass('active');
 
-            let harga = selected.data('harga');
-            let stok = selected.data('stok');
-            let id = selected.val();
+            $(this).addClass('active');
+
+            let id = $(this).data('id');
+            let harga = $(this).data('harga');
+            let stok = $(this).data('stok');
 
             $('#barang_variasi_id').val(id);
 
-            if (id) {
+            $('#hargaBarang').text(
+                "Rp " + Number(harga).toLocaleString('id-ID')
+            );
 
-                $('#hargaBarang').html(
-                    'Rp ' + Number(harga).toLocaleString('id-ID')
-                );
+            $('#stokBarang').text(stok);
 
-                $('#stokBarang').text(stok);
-
-                $('#jumlahBarang')
-                    .attr('max', stok)
-                    .val(1);
-
-            } else {
-
-                $('#hargaBarang').text('Pilih Variasi');
-                $('#stokBarang').text('-');
-
-            }
+            $('#jumlahBarang').attr('max', stok);
 
         });
 
+        $('form').submit(function() {
+
+            if ($('#barang_variasi_id').val() == '') {
+                alert('Silakan pilih variasi terlebih dahulu');
+                return false;
+            }
+
+        });
+    </script>
+    <script>
         let checkoutClicked = false;
 
         $('button[value="checkout"]').click(function(e) {

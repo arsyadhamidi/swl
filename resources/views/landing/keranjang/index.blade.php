@@ -202,7 +202,7 @@
                                     <textarea name="alamat_pengiriman"
                                               class="form-control @error('alamat_pengiriman') is-invalid @enderror"
                                               rows="3"
-                                              required>{{ old('alamat_pengiriman') }}</textarea>
+                                              required>{{ old('alamat_pengiriman', Auth::user()->alamat ?? '-') }}</textarea>
 
                                     @error('alamat_pengiriman')
                                         <div class="invalid-feedback">
@@ -219,7 +219,7 @@
                                     <input type="text"
                                            name="telp"
                                            class="form-control @error('telp') is-invalid @enderror"
-                                           value="{{ old('telp') }}"
+                                           value="{{ old('telp', Auth::user()->telp ?? '0') }}"
                                            required>
 
                                     @error('telp')

@@ -252,3 +252,25 @@ footer {
     font-weight: bold;
     font-size: 16px;
 }
+
+.variasi-card{
+    cursor:pointer;
+    border:2px solid #e9ecef;
+    border-radius:12px;
+    transition:.25s;
+}
+
+.variasi-card:hover{
+    transform:translateY(-3px);
+    border-color:#ff6b81;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.variasi-card.active{
+    border-color:#ff4d6d;
+    background:#fff5f7;
+}
+
+.variasi-card.active .text-danger{
+    color:#ff1744 !important;
+}
