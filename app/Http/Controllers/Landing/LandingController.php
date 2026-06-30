@@ -687,4 +687,26 @@ class LandingController extends Controller
                 );
         }
     }
+
+    public function kategori()
+    {
+        $kategoris = DB::table('kategoris')
+            ->leftJoin('barangs', 'kategoris.id', '=', 'barangs.kategori_id')
+            ->select(
+                'kategoris.*',
+                DB::raw('COUNT(barangs.id) as total_barang')
+            )
+            ->groupBy(
+                'kategoris.id',
+                'kategoris.nm_kategori',
+                'kategoris.created_at',
+                'kategoris.updated_at'
+            )
+            ->orderBy('kategoris.nm_kategori')
+            ->get();
+
+        return view('landing.kategori.index', [
+            'kategoris' => $kategoris,
+        ]);
+    }
 }

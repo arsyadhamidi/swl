@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 // Landing
 Route::get('/', [LandingController::class, 'index'])->name('landing.index');
 Route::get('/produk', [LandingController::class, 'produk'])->name('landing.produk');
+Route::get('/kategori', [LandingController::class, 'kategori'])->name('landing.kategori');
 
 // Login
 Route::get('/login', [LoginController::class, 'index'])->name('login');

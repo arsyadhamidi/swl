@@ -274,3 +274,39 @@ footer {
 .variasi-card.active .text-danger{
     color:#ff1744 !important;
 }
+
+
+.kategori-card{
+    border-radius:15px;
+    transition:.3s;
+}
+
+.kategori-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 15px 30px rgba(0,0,0,.15)!important;
+}
+
+.kategori-icon{
+    width:80px;
+    height:80px;
+    margin:auto;
+    border-radius:50%;
+    background:#ffe8ef;
+    color:#ff5c8d;
+    font-size:38px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.btn-pink{
+    background:#ff5c8d;
+    color:white;
+    border-radius:30px;
+    padding:8px 20px;
+}
+
+.btn-pink:hover{
+    background:#ff3f76;
+    color:white;
+}
