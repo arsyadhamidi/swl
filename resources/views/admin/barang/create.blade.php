@@ -55,7 +55,8 @@
                                         <textarea name="ket_barang"
                                                   class="form-control @error('ket_barang') is-invalid @enderror"
                                                   rows="5"
-                                                  placeholder="Masukan keterangan" id="ketBarangText">{{ old('ket_barang') }}</textarea>
+                                                  placeholder="Masukan keterangan"
+                                                  id="ketBarangText">{{ old('ket_barang') }}</textarea>
                                     </div>
                                 </div>
                                 <div class="col-lg-12">
@@ -78,49 +79,94 @@
                                     <h5>Variasi Barang</h5>
 
                                     <div id="variasi-container">
-                                        <div class="row variasi-item mb-2">
-                                            <div class="col-md-2">
-                                                <input type="text"
-                                                       name="ukuran[]"
-                                                       class="form-control"
-                                                       placeholder="Ukuran">
-                                            </div>
 
-                                            <div class="col-md-2">
-                                                <input type="text"
-                                                       name="warna[]"
-                                                       class="form-control"
-                                                       placeholder="Warna">
-                                            </div>
+                                        <div class="card border mb-3 variasi-item">
 
-                                            <div class="col-md-3">
-                                                <input type="number"
-                                                       name="harga[]"
-                                                       class="form-control"
-                                                       placeholder="Harga">
-                                            </div>
+                                            <div class="card-header d-flex align-items-center">
+                                                <strong>Variasi 1</strong>
 
-                                            <div class="col-md-3">
-                                                <input type="number"
-                                                       name="stok[]"
-                                                       class="form-control"
-                                                       placeholder="Stok">
-                                            </div>
-
-                                            <div class="col-md-2">
                                                 <button type="button"
-                                                        class="btn btn-danger remove-variant">
-                                                    <i class="fas fa-trash"></i>
+                                                        class="btn btn-danger btn-sm remove-variasi ml-auto">
+                                                    Hapus
                                                 </button>
                                             </div>
+
+                                            <div class="card-body">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-3 mb-3">
+                                                        <label>Ukuran</label>
+                                                        <input type="text"
+                                                               name="ukuran[]"
+                                                               class="form-control"
+                                                               placeholder="M">
+                                                    </div>
+
+                                                    <div class="col-md-3 mb-3">
+                                                        <label>Lingkar Dada (cm)</label>
+                                                        <input type="number"
+                                                               name="lingkar_dada[]"
+                                                               class="form-control"
+                                                               placeholder="78">
+                                                    </div>
+
+                                                    <div class="col-md-3 mb-3">
+                                                        <label>Panjang Baju (cm)</label>
+                                                        <input type="number"
+                                                               name="panjang_baju[]"
+                                                               class="form-control"
+                                                               placeholder="90">
+                                                    </div>
+
+                                                    <div class="col-md-3 mb-3">
+                                                        <label>Panjang Lengan (cm)</label>
+                                                        <input type="number"
+                                                               name="panjang_lengan[]"
+                                                               class="form-control"
+                                                               placeholder="48">
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="row">
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <label>Warna</label>
+                                                        <input type="text"
+                                                               name="warna[]"
+                                                               class="form-control"
+                                                               placeholder="Navy">
+                                                    </div>
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <label>Harga</label>
+                                                        <input type="number"
+                                                               name="harga[]"
+                                                               class="form-control"
+                                                               placeholder="120000">
+                                                    </div>
+
+                                                    <div class="col-md-4 mb-3">
+                                                        <label>Stok</label>
+                                                        <input type="number"
+                                                               name="stok[]"
+                                                               class="form-control"
+                                                               placeholder="20">
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
                                         </div>
+
                                     </div>
 
                                     <button type="button"
-                                            id="add-variant"
-                                            class="btn btn-info mt-2">
-                                        <i class="fas fa-plus"></i>
-                                        Tambah Variasi
+                                            id="add-variasi"
+                                            class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Tambah Variasi
                                     </button>
                                 </div>
                             </div>
@@ -152,56 +198,94 @@
             $('#selectedKategori').select2({
                 theme: 'bootstrap4'
             });
+        });
+    </script>
 
-            $('#add-variant').click(function() {
+    <script>
+        let nomor = 1;
 
-                let html = `
-        <div class="row variasi-item mb-2">
+        $('#add-variasi').click(function() {
 
-            <div class="col-md-2">
-                <input type="text"
-                    name="ukuran[]"
-                    class="form-control"
-                    placeholder="Ukuran">
+            nomor++;
+
+            let html = `
+    <div class="card border mb-3 variasi-item">
+
+
+        <div class="card-header d-flex align-items-center">
+                                                <strong>Variasi ${nomor}</strong>
+
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm remove-variasi ml-auto">
+                                                    Hapus
+                                                </button>
+                                            </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+                    <label>Ukuran</label>
+                    <input type="text" name="ukuran[]" class="form-control">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label>Lingkar Dada</label>
+                    <input type="number" name="lingkar_dada[]" class="form-control">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label>Panjang Baju</label>
+                    <input type="number" name="panjang_baju[]" class="form-control">
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <label>Panjang Lengan</label>
+                    <input type="number" name="panjang_lengan[]" class="form-control">
+                </div>
+
             </div>
 
-            <div class="col-md-2">
-                <input type="text"
-                    name="warna[]"
-                    class="form-control"
-                    placeholder="Warna">
-            </div>
+            <div class="row">
 
-            <div class="col-md-3">
-                <input type="number"
-                    name="harga[]"
-                    class="form-control"
-                    placeholder="Harga">
-            </div>
+                <div class="col-md-4 mb-3">
+                    <label>Warna</label>
+                    <input type="text" name="warna[]" class="form-control">
+                </div>
 
-            <div class="col-md-3">
-                <input type="number"
-                    name="stok[]"
-                    class="form-control"
-                    placeholder="Stok">
-            </div>
+                <div class="col-md-4 mb-3">
+                    <label>Harga</label>
+                    <input type="number" name="harga[]" class="form-control">
+                </div>
 
-            <div class="col-md-2">
-                <button type="button"
-                        class="btn btn-danger remove-variant">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="col-md-4 mb-3">
+                    <label>Stok</label>
+                    <input type="number" name="stok[]" class="form-control">
+                </div>
+
             </div>
 
         </div>
-        `;
 
-                $('#variasi-container').append(html);
-            });
+    </div>`;
 
-            $(document).on('click', '.remove-variant', function() {
-                $(this).closest('.variasi-item').remove();
-            });
+            $('#variasi-container').append(html);
+
+        });
+
+        $(document).on('click', '.remove-variasi', function() {
+
+            if ($('.variasi-item').length <= 1) {
+
+                toastr.error('Minimal harus ada 1 variasi.');
+
+                return;
+            }
+
+            $(this).closest('.variasi-item').remove();
+
+            nomor = $('.variasi-item').length;
 
         });
     </script>

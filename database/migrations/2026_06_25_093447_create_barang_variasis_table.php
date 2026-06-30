@@ -15,8 +15,11 @@ return new class extends Migration
             $table->integer('id')->autoIncrement();
             $table->integer('barang_id');
             $table->string('ukuran', 10);
+            $table->integer('lingkar_dada');
+            $table->integer('panjang_baju');
+            $table->integer('panjang_lengan')->nullable();
             $table->string('warna', 50);
-            $table->decimal('harga', 12,2);
+            $table->decimal('harga', 12, 2);
             $table->integer('stok');
             $table->timestamps();
         });
