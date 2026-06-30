@@ -22,7 +22,20 @@ class LandingController extends Controller
 {
     public function index()
     {
-        $kategoris = Kategori::orderBy('id', 'desc')->get();
+        $kategoris = DB::table('kategoris')
+            ->leftJoin('barangs', 'kategoris.id', '=', 'barangs.kategori_id')
+            ->select(
+                'kategoris.*',
+                DB::raw('COUNT(barangs.id) as total_barang')
+            )
+            ->groupBy(
+                'kategoris.id',
+                'kategoris.nm_kategori',
+                'kategoris.created_at',
+                'kategoris.updated_at'
+            )
+            ->orderBy('kategoris.nm_kategori')
+            ->get();
 
         $barangs = Barang::leftJoin(
             'barang_variasis',
@@ -707,6 +720,39 @@ class LandingController extends Controller
 
         return view('landing.kategori.index', [
             'kategoris' => $kategoris,
+        ]);
+    }
+
+    public function showkategori($id)
+    {
+        $barangs = Barang::leftJoin(
+            'barang_variasis',
+            'barangs.id',
+            '=',
+            'barang_variasis.barang_id'
+        )
+            ->selectRaw('
+            barangs.*,
+            COUNT(barang_variasis.id) as total_variasi,
+            COALESCE(SUM(barang_variasis.stok),0) as total_stok,
+            MIN(barang_variasis.harga) as harga_min,
+            MAX(barang_variasis.harga) as harga_max
+        ')
+            ->groupBy(
+                'barangs.id',
+                'barangs.nm_barang',
+                'barangs.kategori_id',
+                'barangs.foto_barang',
+                'barangs.ket_barang',
+                'barangs.created_at',
+                'barangs.updated_at'
+            )
+            ->where('barangs.kategori_id', $id)
+            ->orderByDesc('barangs.id')
+            ->get();
+
+        return view('landing.kategori.show', [
+            'barangs' => $barangs,
         ]);
     }
 }

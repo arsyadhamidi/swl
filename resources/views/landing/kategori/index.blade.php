@@ -46,7 +46,7 @@
                                     {{ $kategori->total_barang ?? '0' }} Produk
                                 </p>
 
-                                <a href="#"
+                                <a href="{{ route('landing.showkategori', $kategori->id ?? '') }}"
                                    class="btn btn-pink btn-sm">
 
                                     Lihat Produk

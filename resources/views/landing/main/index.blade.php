@@ -50,31 +50,39 @@
 
             <div class="row">
 
-                @forelse ($kategoris as $kategori)
-                    <div class="col-md-3 col-6 mb-4">
+                @forelse($kategoris as $kategori)
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
 
-                        <a href="#"
-                           style="text-decoration:none">
+                        <div class="card kategori-card h-100 shadow-sm border-0">
 
-                            <div class="card kategori-card text-center p-4 h-100 text-dark">
+                            <div class="card-body text-center">
 
                                 <div class="kategori-icon mb-3">
-                                    <i class="fas fa-tags"></i>
+
+                                    <i class="fas fa-box"></i>
+
                                 </div>
 
-                                <h6 class="fw-semibold">
-                                    {{ $kategori->nm_kategori ?? '-' }}
-                                </h6>
+                                <h5 class="fw-bold">
 
-                                @if (isset($kategori->barangs_count))
-                                    <small class="text-muted">
-                                        {{ $kategori->barangs_count }} Produk
-                                    </small>
-                                @endif
+                                    {{ $kategori->nm_kategori }}
+
+                                </h5>
+
+                                <p class="text-muted mb-3">
+                                    {{ $kategori->total_barang ?? '0' }} Produk
+                                </p>
+
+                                <a href="{{ route('landing.showkategori', $kategori->id ?? '') }}"
+                                   class="btn btn-pink btn-sm">
+
+                                    Lihat Produk
+
+                                </a>
 
                             </div>
 
-                        </a>
+                        </div>
 
                     </div>
 
@@ -82,17 +90,9 @@
 
                     <div class="col-12">
 
-                        <div class="text-center py-5">
+                        <div class="alert alert-info text-center">
 
-                            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486754.png"
-                                 width="120"
-                                 class="mb-3">
-
-                            <h5>Kategori Belum Tersedia</h5>
-
-                            <p class="text-muted">
-                                Saat ini belum ada kategori produk yang ditampilkan.
-                            </p>
+                            Belum ada kategori.
 
                         </div>
 
