@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pesanans', function (Blueprint $table) {
             $table->integer('id')->autoIncrement();
             $table->integer('users_id');
+            $table->integer('ongkir_id');
             $table->timestamp('tgl_pesanan');
             $table->decimal('tot_harga', 12, 2);
             $table->decimal('ongkir', 12, 2)->default(0);

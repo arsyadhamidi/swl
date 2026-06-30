@@ -51,7 +51,7 @@
                             <hr>
 
                             <p>
-                                {{ $barangs->ket_barang ?? 'Tidak ada deskripsi produk.' }}
+                                {!! $barangs->ket_barang ?? 'Tidak ada deskripsi produk.' !!}
                             </p>
 
                             <hr>
@@ -73,38 +73,101 @@
                                 {{-- VARIASI --}}
                                 <div class="mb-4">
 
-                                    <label class="fw-bold mb-2 d-block">
+                                    <label class="fw-bold mb-3 d-block">
                                         Pilih Variasi
                                     </label>
 
                                     <div class="row g-3">
 
                                         @foreach ($variasis as $variasi)
-                                            <div class="col-md-6">
+                                            <div class="col-lg-6">
 
-                                                <div class="card variasi-card h-100"
+                                                <div class="card variasi-card shadow-sm border"
                                                      data-id="{{ $variasi->id }}"
                                                      data-harga="{{ $variasi->harga }}"
                                                      data-stok="{{ $variasi->stok }}">
 
                                                     <div class="card-body">
 
-                                                        <h6 class="fw-bold mb-2">
-                                                            {{ $variasi->ukuran }}
-                                                        </h6>
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
 
-                                                        <p class="mb-1">
-                                                            🎨 {{ $variasi->warna }}
-                                                        </p>
+                                                            <h5 class="fw-bold text-primary mb-0">
+                                                                Ukuran {{ $variasi->ukuran }}
+                                                            </h5>
 
-                                                        <h6 class="text-danger mb-1">
+                                                            <span class="badge bg-success">
+                                                                Stok {{ $variasi->stok }}
+                                                            </span>
+
+                                                        </div>
+
+                                                        <table class="table table-sm table-borderless mb-2">
+
+                                                            <tr>
+                                                                <td width="45%">
+                                                                    Lingkar Dada
+                                                                </td>
+
+                                                                <td>
+                                                                    :
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $variasi->lingkar_dada }} cm
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    Panjang Baju
+                                                                </td>
+
+                                                                <td>
+                                                                    :
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $variasi->panjang_baju }} cm
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    Panjang Lengan
+                                                                </td>
+
+                                                                <td>
+                                                                    :
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $variasi->panjang_lengan ?? '-' }} cm
+                                                                </td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td>
+                                                                    Warna
+                                                                </td>
+
+                                                                <td>
+                                                                    :
+                                                                </td>
+
+                                                                <td>
+                                                                    {{ $variasi->warna }}
+                                                                </td>
+                                                            </tr>
+
+                                                        </table>
+
+                                                        <hr>
+
+                                                        <h5 class="text-danger fw-bold mb-0">
+
                                                             Rp {{ number_format($variasi->harga, 0, ',', '.') }}
-                                                        </h6>
 
-                                                        <small class="text-success">
-                                                            Stok :
-                                                            {{ $variasi->stok }}
-                                                        </small>
+                                                        </h5>
 
                                                     </div>
 
@@ -151,6 +214,97 @@
                                                 {{ $message }}
                                             </div>
                                         @enderror
+
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        <label>Kota Tujuan</label>
+
+                                        <select name="ongkir_id"
+                                                id="selectedOngkir"
+                                                class="form-control @error('ongkir_id') is-invalid @enderror">
+
+                                            <option value="">
+                                                Pilih Kota
+                                            </option>
+
+                                            @foreach ($ongkirs as $ongkir)
+                                                <option value="{{ $ongkir->id }}"
+                                                        data-biaya="{{ $ongkir->biaya }}">
+
+                                                    {{ $ongkir->kota }}
+
+                                                </option>
+                                            @endforeach
+
+                                        </select>
+
+                                        @error('ongkir_id')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+
+                                    </div>
+
+                                    <div class="card bg-light mb-3">
+
+                                        <div class="card-body">
+
+                                            <table class="table table-borderless mb-0">
+
+                                                <tr>
+
+                                                    <td>Harga Barang</td>
+
+                                                    <td class="text-end">
+
+                                                        <span id="hargaCheckout">
+
+                                                            Rp 0
+
+                                                        </span>
+
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr>
+
+                                                    <td>Ongkir</td>
+
+                                                    <td class="text-end">
+
+                                                        <span id="ongkirCheckout">
+
+                                                            Rp 0
+
+                                                        </span>
+
+                                                    </td>
+
+                                                </tr>
+
+                                                <tr class="fw-bold">
+
+                                                    <td>Total Bayar</td>
+
+                                                    <td class="text-end text-danger">
+
+                                                        <span id="totalCheckout">
+
+                                                            Rp 0
+
+                                                        </span>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            </table>
+
+                                        </div>
 
                                     </div>
 
@@ -232,6 +386,54 @@
 @endsection
 
 @push('custom-script')
+    <script>
+        $('#jumlahBarang').on('keyup change', function() {
+
+            hitungTotal();
+
+        });
+    </script>
+    <script>
+        let hargaBarang = 0;
+
+        $('.variasi-card').click(function() {
+
+            hargaBarang = Number($(this).data('harga'));
+
+            $('#hargaCheckout').text(
+                "Rp " + hargaBarang.toLocaleString('id-ID')
+            );
+
+            hitungTotal();
+
+        });
+
+        $('#selectedOngkir').change(function() {
+
+            hitungTotal();
+
+        });
+
+        function hitungTotal() {
+
+            let ongkir = Number(
+                $('#selectedOngkir option:selected').data('biaya')
+            ) || 0;
+
+            $('#ongkirCheckout').text(
+                "Rp " + ongkir.toLocaleString('id-ID')
+            );
+
+            let qty = Number($('#jumlahBarang').val());
+
+            let total = (hargaBarang * qty) + ongkir;
+
+            $('#totalCheckout').text(
+                "Rp " + total.toLocaleString('id-ID')
+            );
+
+        }
+    </script>
     <script>
         $('.variasi-card').click(function() {
 

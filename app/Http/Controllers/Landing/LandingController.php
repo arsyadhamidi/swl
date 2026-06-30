@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Barang;
 use App\Models\BarangVariasi;
 use App\Models\DetailPesanan;
-use App\Models\Kategori;
 use App\Models\Keranjang;
 use App\Models\KeranjangDetail;
+use App\Models\Ongkir;
 use App\Models\Pesanan;
 use App\Models\User;
 use Carbon\Carbon;
@@ -194,9 +194,12 @@ class LandingController extends Controller
             $id
         )->get();
 
+        $ongkirs = Ongkir::get();
+
         return view('landing.barang.show', [
             'barangs' => $barangs,
             'variasis' => $variasis,
+            'ongkirs' => $ongkirs,
         ]);
     }
 
@@ -259,16 +262,27 @@ class LandingController extends Controller
                 'telp' => 'required|max:20',
                 'alamat_pengiriman' => 'required',
                 'bukti_pembayaran' => 'required',
+                'ongkir_id' => 'required',
             ], [
                 'telp.required' => 'Nomor telepon wajib diisi.',
+                'ongkir_id.required' => 'Silakan pilih kota tujuan.',
                 'alamat_pengiriman.required' => 'Alamat pengiriman wajib diisi.',
                 'bukti_pembayaran.required' => 'Bukti pembayaran wajib diupload.',
             ]);
 
+            $ongkir = Ongkir::findOrFail($request->ongkir_id);
+
+            $nilaiOngkir = $ongkir->biaya;
+
+            $grandTotal = $totHarga + $nilaiOngkir;
+
             $pesanans = Pesanan::create([
                 'users_id' => $users->id,
+                'ongkir_id' => $ongkir->id,
                 'tgl_pesanan' => $carbons,
                 'tot_harga' => $totHarga,
+                'ongkir' => $nilaiOngkir,
+                'grand_total' => $grandTotal,
                 'alamat_pengiriman' => $request->alamat_pengiriman,
                 'telp' => $request->telp,
                 'bukti_pembayaran' => $buktiPembayaran,
