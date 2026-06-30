@@ -196,12 +196,16 @@ class AdminBarangController extends Controller
         $request->validate([
             'nm_barang' => 'required|max:100',
             'kategori_id' => 'required',
-            'foto_barang' => 'required|max:10248|mimes:jpg,png,jpeg',
+            'foto_barang' => 'required|image|mimes:jpg,jpeg,png|max:10240',
 
             'ukuran.*' => 'required|max:10',
+            'lingkar_dada.*' => 'required|integer|min:1',
+            'panjang_baju.*' => 'required|integer|min:1',
+            'panjang_lengan.*' => 'nullable|integer|min:0',
             'warna.*' => 'required|max:50',
             'harga.*' => 'required|numeric|min:0',
             'stok.*' => 'required|integer|min:0',
+
         ], [
 
             'nm_barang.required' => 'Nama barang wajib diisi.',
@@ -210,13 +214,29 @@ class AdminBarangController extends Controller
             'kategori_id.required' => 'Kategori barang wajib dipilih.',
 
             'foto_barang.required' => 'Foto barang wajib diupload.',
-            'foto_barang.max' => 'Ukuran foto maksimal 10MB.',
-            'foto_barang.mimes' => 'Format foto harus JPG, JPEG, atau PNG.',
+            'foto_barang.image' => 'File harus berupa gambar.',
+            'foto_barang.mimes' => 'Format gambar harus JPG, JPEG atau PNG.',
+            'foto_barang.max' => 'Ukuran gambar maksimal 10 MB.',
 
             'ukuran.*.required' => 'Ukuran wajib diisi.',
+            'ukuran.*.max' => 'Ukuran maksimal 10 karakter.',
+
+            'lingkar_dada.*.required' => 'Lingkar dada wajib diisi.',
+            'lingkar_dada.*.integer' => 'Lingkar dada harus berupa angka.',
+
+            'panjang_baju.*.required' => 'Panjang baju wajib diisi.',
+            'panjang_baju.*.integer' => 'Panjang baju harus berupa angka.',
+
+            'panjang_lengan.*.integer' => 'Panjang lengan harus berupa angka.',
+
             'warna.*.required' => 'Warna wajib diisi.',
+            'warna.*.max' => 'Warna maksimal 50 karakter.',
+
             'harga.*.required' => 'Harga wajib diisi.',
+            'harga.*.numeric' => 'Harga harus berupa angka.',
+
             'stok.*.required' => 'Stok wajib diisi.',
+            'stok.*.integer' => 'Stok harus berupa angka.',
         ]);
 
         DB::beginTransaction();
@@ -226,8 +246,9 @@ class AdminBarangController extends Controller
             $fotoBarang = null;
 
             if ($request->hasFile('foto_barang')) {
+
                 $fotoBarang = $request->file('foto_barang')
-                    ->store('foto_barang');
+                    ->store('foto_barang', 'public');
             }
 
             $barang = Barang::create([
@@ -237,32 +258,32 @@ class AdminBarangController extends Controller
                 'foto_barang' => $fotoBarang,
             ]);
 
-            if ($request->filled('ukuran')) {
+            foreach ($request->ukuran as $key => $ukuran) {
 
-                foreach ($request->ukuran as $key => $ukuran) {
-
-                    BarangVariasi::create([
-                        'barang_id' => $barang->id,
-                        'ukuran' => $ukuran,
-                        'warna' => $request->warna[$key],
-                        'harga' => $request->harga[$key],
-                        'stok' => $request->stok[$key],
-                    ]);
-                }
+                BarangVariasi::create([
+                    'barang_id' => $barang->id,
+                    'ukuran' => $ukuran,
+                    'lingkar_dada' => $request->lingkar_dada[$key],
+                    'panjang_baju' => $request->panjang_baju[$key],
+                    'panjang_lengan' => $request->panjang_lengan[$key] ?? null,
+                    'warna' => $request->warna[$key],
+                    'harga' => $request->harga[$key],
+                    'stok' => $request->stok[$key],
+                ]);
             }
 
             DB::commit();
 
             return redirect()
                 ->route('admin-barang.index')
-                ->with('success', 'Selamat! Anda berhasil membuat data barang.');
+                ->with('success', 'Selamat! Anda berhasil menambahkan data barang.');
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
             return back()
-                ->with('error', $e->getMessage());
+                ->with('error', 'Terjadi kesalahan: '.$e->getMessage());
         }
     }
 
@@ -288,12 +309,15 @@ class AdminBarangController extends Controller
         $request->validate([
             'nm_barang' => 'required|max:100',
             'kategori_id' => 'required',
-            'foto_barang' => 'nullable|max:10248|mimes:jpg,png,jpeg',
+            'foto_barang' => 'nullable|mimes:jpg,jpeg,png|max:10240',
 
             'ukuran.*' => 'required|max:10',
+            'lingkar_dada.*' => 'required|min:1',
+            'panjang_baju.*' => 'required|min:1',
+            'panjang_lengan.*' => 'nullable|min:0',
             'warna.*' => 'required|max:50',
-            'harga.*' => 'required|numeric|min:0',
-            'stok.*' => 'required|integer|min:0',
+            'harga.*' => 'required|min:0',
+            'stok.*' => 'required|min:0',
         ], [
 
             'nm_barang.required' => 'Nama barang wajib diisi.',
@@ -301,10 +325,12 @@ class AdminBarangController extends Controller
 
             'kategori_id.required' => 'Kategori barang wajib dipilih.',
 
-            'foto_barang.max' => 'Ukuran foto maksimal 10MB.',
-            'foto_barang.mimes' => 'Format foto harus JPG, JPEG, atau PNG.',
+            'foto_barang.mimes' => 'Foto harus berformat JPG, JPEG atau PNG.',
+            'foto_barang.max' => 'Ukuran foto maksimal 10 MB.',
 
             'ukuran.*.required' => 'Ukuran wajib diisi.',
+            'lingkar_dada.*.required' => 'Lingkar dada wajib diisi.',
+            'panjang_baju.*.required' => 'Panjang baju wajib diisi.',
             'warna.*.required' => 'Warna wajib diisi.',
             'harga.*.required' => 'Harga wajib diisi.',
             'stok.*.required' => 'Stok wajib diisi.',
@@ -320,8 +346,8 @@ class AdminBarangController extends Controller
 
             if ($request->hasFile('foto_barang')) {
 
-                if ($barang->foto_barang) {
-                    Storage::delete($barang->foto_barang);
+                if ($fotoBarang && Storage::exists($fotoBarang)) {
+                    Storage::delete($fotoBarang);
                 }
 
                 $fotoBarang = $request->file('foto_barang')
@@ -329,44 +355,51 @@ class AdminBarangController extends Controller
             }
 
             $barang->update([
-                'nm_barang' => $request->nm_barang,
                 'kategori_id' => $request->kategori_id,
+                'nm_barang' => $request->nm_barang,
                 'ket_barang' => $request->ket_barang,
                 'foto_barang' => $fotoBarang,
             ]);
 
-            /*
-            |--------------------------------------------------
-            | Hapus seluruh variasi lama
-            |--------------------------------------------------
-            */
-            BarangVariasi::where('barang_id', $barang->id)
-                ->delete();
+            $keepId = [];
 
-            /*
-            |--------------------------------------------------
-            | Simpan variasi baru
-            |--------------------------------------------------
-            */
-            if ($request->filled('ukuran')) {
+            foreach ($request->ukuran as $i => $ukuran) {
 
-                foreach ($request->ukuran as $key => $ukuran) {
+                $data = [
+                    'barang_id' => $barang->id,
+                    'ukuran' => $ukuran,
+                    'lingkar_dada' => $request->lingkar_dada[$i],
+                    'panjang_baju' => $request->panjang_baju[$i],
+                    'panjang_lengan' => $request->panjang_lengan[$i],
+                    'warna' => $request->warna[$i],
+                    'harga' => $request->harga[$i],
+                    'stok' => $request->stok[$i],
+                ];
 
-                    BarangVariasi::create([
-                        'barang_id' => $barang->id,
-                        'ukuran' => $ukuran,
-                        'warna' => $request->warna[$key],
-                        'harga' => $request->harga[$key],
-                        'stok' => $request->stok[$key],
-                    ]);
+                if (! empty($request->variasi_id[$i])) {
+
+                    BarangVariasi::where('id', $request->variasi_id[$i])
+                        ->update($data);
+
+                    $keepId[] = $request->variasi_id[$i];
+
+                } else {
+
+                    $variasi = BarangVariasi::create($data);
+
+                    $keepId[] = $variasi->id;
                 }
             }
+
+            BarangVariasi::where('barang_id', $barang->id)
+                ->whereNotIn('id', $keepId)
+                ->delete();
 
             DB::commit();
 
             return redirect()
                 ->route('admin-barang.index')
-                ->with('success', 'Selamat! Anda berhasil memperbaharui data barang.');
+                ->with('success', 'Selamat! Anda berhasil memperbarui data barang.');
 
         } catch (\Exception $e) {
 
