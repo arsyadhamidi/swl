@@ -511,11 +511,14 @@ class LandingController extends Controller
             )
             ->get();
 
+        $ongkirs = Ongkir::get();
+
         return view(
             'landing.keranjang.index',
             compact(
                 'keranjangs',
-                'detailKeranjangs'
+                'detailKeranjangs',
+                'ongkirs',
             )
         );
     }
@@ -573,18 +576,23 @@ class LandingController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
-            'bukti_pembayaran' => 'required|mimes:png,jpg,jpeg|max:10248',
+            'ongkir_id' => 'required|exists:ongkirs,id',
+            'bukti_pembayaran' => 'required|mimes:png,jpg,jpeg|max:10240',
             'telp' => 'required|max:20|regex:/^[0-9+]+$/',
             'alamat_pengiriman' => 'required',
             'tot_harga' => 'required|numeric',
         ], [
+
+            'ongkir_id.required' => 'Kota tujuan wajib dipilih.',
+            'ongkir_id.exists' => 'Data ongkir tidak ditemukan.',
+
             'bukti_pembayaran.required' => 'Bukti pembayaran wajib diunggah.',
-            'bukti_pembayaran.mimes' => 'Bukti pembayaran harus berupa file png, jpg, atau jpeg.',
+            'bukti_pembayaran.mimes' => 'Bukti pembayaran harus berupa PNG, JPG atau JPEG.',
             'bukti_pembayaran.max' => 'Ukuran file maksimal 10 MB.',
 
             'telp.required' => 'Nomor telepon wajib diisi.',
             'telp.max' => 'Nomor telepon maksimal 20 karakter.',
-            'telp.regex' => 'Nomor telepon hanya boleh berisi angka dan tanda +.',
+            'telp.regex' => 'Nomor telepon tidak valid.',
 
             'alamat_pengiriman.required' => 'Alamat pengiriman wajib diisi.',
 
@@ -596,103 +604,106 @@ class LandingController extends Controller
 
         try {
 
-            $users = Auth::user();
+            $user = Auth::user();
 
-            $keranjangs = Keranjang::where(
-                'users_id',
-                $users->id
-            )->first();
+            $keranjang = Keranjang::where('users_id', $user->id)->first();
 
-            if (! $keranjangs) {
-
-                throw new \Exception(
-                    'Keranjang kosong, silahkan pilih barang terlebih dahulu!'
-                );
+            if (! $keranjang) {
+                throw new \Exception('Keranjang masih kosong.');
             }
 
-            $detailKeranjangs = KeranjangDetail::where(
+            $detailKeranjang = KeranjangDetail::where(
                 'keranjang_id',
-                $keranjangs->id
+                $keranjang->id
             )->get();
 
-            if ($detailKeranjangs->isEmpty()) {
-
-                throw new \Exception(
-                    'Keranjang kosong, silahkan pilih barang terlebih dahulu!'
-                );
+            if ($detailKeranjang->isEmpty()) {
+                throw new \Exception('Keranjang masih kosong.');
             }
 
-            // Upload bukti pembayaran
-            $buktiPembayaran = null;
+            /*
+            |--------------------------------------------------------------------------
+            | Ambil Ongkir
+            |--------------------------------------------------------------------------
+            */
 
-            if ($request->hasFile('bukti_pembayaran')) {
+            $ongkir = Ongkir::findOrFail($request->ongkir_id);
 
-                $buktiPembayaran = $request
-                    ->file('bukti_pembayaran')
-                    ->store('bukti_pembayaran', 'public');
-            }
+            $totalBarang = $request->tot_harga;
 
-            // Buat pesanan
+            $grandTotal = $totalBarang + $ongkir->biaya;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Upload Bukti Pembayaran
+            |--------------------------------------------------------------------------
+            */
+
+            $buktiPembayaran = $request->file('bukti_pembayaran')
+                ->store('bukti_pembayaran', 'public');
+
+            /*
+            |--------------------------------------------------------------------------
+            | Simpan Pesanan
+            |--------------------------------------------------------------------------
+            */
+
             $pesanan = Pesanan::create([
-                'users_id' => $users->id,
+                'users_id' => $user->id,
+                'ongkir_id' => $ongkir->id,
                 'tgl_pesanan' => now(),
-                'tot_harga' => $request->tot_harga,
+                'tot_harga' => $totalBarang,
+                'ongkir' => $ongkir->biaya,
+                'grand_total' => $grandTotal,
                 'alamat_pengiriman' => $request->alamat_pengiriman,
                 'telp' => $request->telp,
                 'bukti_pembayaran' => $buktiPembayaran,
                 'status' => 'Pending',
             ]);
 
-            foreach ($detailKeranjangs as $details) {
+            /*
+            |--------------------------------------------------------------------------
+            | Simpan Detail Pesanan
+            |--------------------------------------------------------------------------
+            */
 
-                $variasi = BarangVariasi::where(
-                    'id',
-                    $details->barang_variasi_id
-                )->first();
+            foreach ($detailKeranjang as $detail) {
+
+                $variasi = BarangVariasi::find($detail->barang_variasi_id);
 
                 if (! $variasi) {
+                    throw new \Exception('Variasi produk tidak ditemukan.');
+                }
 
+                if ($variasi->stok < $detail->jumlah) {
                     throw new \Exception(
-                        'Variasi produk tidak ditemukan.'
+                        "Stok {$variasi->ukuran} - {$variasi->warna} tidak mencukupi."
                     );
                 }
 
-                // Cek stok
-                if ($variasi->stok < $details->jumlah) {
-
-                    throw new \Exception(
-                        'Stok produk ukuran '.
-                        $variasi->ukuran.
-                        ' warna '.
-                        $variasi->warna.
-                        ' tidak mencukupi.'
-                    );
-                }
-
-                // Simpan detail pesanan
                 DetailPesanan::create([
                     'pesanan_id' => $pesanan->id,
-                    'barang_variasi_id' => $details->barang_variasi_id,
-                    'jumlah' => $details->jumlah,
-                    'harga' => $details->harga,
-                    'subtotal' => $details->subtotal,
+                    'barang_variasi_id' => $detail->barang_variasi_id,
+                    'jumlah' => $detail->jumlah,
+                    'harga' => $detail->harga,
+                    'subtotal' => $detail->subtotal,
                 ]);
 
-                // Kurangi stok variasi
-                $variasi->decrement(
-                    'stok',
-                    $details->jumlah
-                );
+                $variasi->decrement('stok', $detail->jumlah);
             }
 
-            // Hapus detail keranjang
+            /*
+            |--------------------------------------------------------------------------
+            | Kosongkan Keranjang
+            |--------------------------------------------------------------------------
+            */
+
             KeranjangDetail::where(
                 'keranjang_id',
-                $keranjangs->id
+                $keranjang->id
             )->delete();
 
-            // Hapus keranjang
-            $keranjangs->delete();
+            $keranjang->delete();
 
             DB::commit();
 
@@ -700,18 +711,17 @@ class LandingController extends Controller
                 ->route('pelanggan-barang.suksescheckout')
                 ->with(
                     'success',
-                    'Selamat! Anda berhasil melakukan checkout.'
+                    'Checkout berhasil dilakukan.'
                 );
 
         } catch (\Exception $e) {
 
             DB::rollBack();
 
-            return back()
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 

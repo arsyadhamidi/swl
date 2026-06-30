@@ -69,33 +69,43 @@
 
                                             <td>
 
-                                                <div class="d-flex align-items-center">
+                                                <div class="d-flex">
 
                                                     <img src="{{ asset('storage/' . $item->foto_barang) }}"
-                                                         width="80"
-                                                         height="80"
-                                                         class="rounded me-3"
+                                                         width="90"
+                                                         height="90"
+                                                         class="rounded shadow-sm"
                                                          style="object-fit:cover;">
 
-                                                    <div>
+                                                    <div class="ms-3">
 
-                                                        <strong>
+                                                        <h6 class="mb-1 fw-bold">
+
                                                             {{ $item->nm_barang }}
-                                                        </strong>
 
-                                                        <br>
+                                                        </h6>
 
-                                                        <small class="text-muted">
+                                                        <span class="badge bg-info">
 
-                                                            Ukuran :
                                                             {{ $item->ukuran }}
 
-                                                            <br>
+                                                        </span>
 
-                                                            Warna :
+                                                        <span class="badge bg-secondary">
+
                                                             {{ $item->warna }}
 
-                                                        </small>
+                                                        </span>
+
+                                                        <div class="text-success mt-2">
+
+                                                            <strong>
+
+                                                                Rp {{ number_format($item->harga, 0, ',', '.') }}
+
+                                                            </strong>
+
+                                                        </div>
 
                                                     </div>
 
@@ -162,12 +172,13 @@
                 {{-- CHECKOUT --}}
                 <div class="col-lg-4">
 
-                    <div class="card border-0 shadow-sm">
+                    <div class="card shadow border-0">
 
-                        <div class="card-header bg-white">
+                        <div class="card-header bg-primary text-white">
 
                             <h5 class="mb-0">
-                                Checkout
+                                <i class="fas fa-receipt"></i>
+                                Ringkasan Belanja
                             </h5>
 
                         </div>
@@ -182,82 +193,168 @@
 
                                 <div class="mb-3">
 
-                                    <label>Total Pembayaran</label>
+                                    <label class="fw-bold">
+                                        Kota Tujuan
+                                    </label>
 
-                                    <input type="text"
-                                           class="form-control fw-bold text-success"
-                                           value="Rp {{ number_format($total, 0, ',', '.') }}"
-                                           readonly>
+                                    <select name="ongkir_id"
+                                            id="selectedOngkir"
+                                            class="form-control">
 
-                                    <input type="hidden"
-                                           name="tot_harga"
-                                           value="{{ $total }}">
+                                        <option value="">
+                                            Pilih Kota
+                                        </option>
+
+                                        @foreach ($ongkirs as $ongkir)
+                                            <option value="{{ $ongkir->id }}"
+                                                    data-biaya="{{ $ongkir->biaya }}">
+
+                                                {{ $ongkir->kota }}
+
+                                            </option>
+                                        @endforeach
+
+                                    </select>
 
                                 </div>
 
+                                <div class="card bg-light mb-3">
+
+                                    <div class="card-body">
+
+                                        <table class="table table-borderless mb-0">
+
+                                            <tr>
+
+                                                <td>Total Barang</td>
+
+                                                <td class="text-end">
+
+                                                    <span id="subtotalBelanja">
+
+                                                        Rp {{ number_format($total, 0, ',', '.') }}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <tr>
+
+                                                <td>Ongkir</td>
+
+                                                <td class="text-end">
+
+                                                    <span id="ongkirBelanja">
+
+                                                        Rp 0
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <tr class="border-top">
+
+                                                <td class="fw-bold">
+
+                                                    Grand Total
+
+                                                </td>
+
+                                                <td class="text-end text-danger fw-bold">
+
+                                                    <span id="grandTotal">
+
+                                                        Rp {{ number_format($total, 0, ',', '.') }}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        </table>
+
+                                    </div>
+
+                                </div>
+
+                                <input type="hidden"
+                                       name="tot_harga"
+                                       value="{{ $total }}">
+
+                                <input type="hidden"
+                                       name="ongkir"
+                                       id="ongkirInput">
+
+                                <input type="hidden"
+                                       name="grand_total"
+                                       id="grandTotalInput">
+
                                 <div class="mb-3">
 
-                                    <label>Alamat Pengiriman</label>
+                                    <label class="fw-bold">
+                                        Alamat Pengiriman
+                                    </label>
 
                                     <textarea name="alamat_pengiriman"
-                                              class="form-control @error('alamat_pengiriman') is-invalid @enderror"
                                               rows="3"
-                                              required>{{ old('alamat_pengiriman', Auth::user()->alamat ?? '-') }}</textarea>
-
-                                    @error('alamat_pengiriman')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
+                                              class="form-control">{{ old('alamat_pengiriman', Auth::user()->alamat) }}</textarea>
 
                                 </div>
 
                                 <div class="mb-3">
 
-                                    <label>No Telepon</label>
+                                    <label class="fw-bold">
+
+                                        Nomor Telepon
+
+                                    </label>
 
                                     <input type="text"
                                            name="telp"
-                                           class="form-control @error('telp') is-invalid @enderror"
-                                           value="{{ old('telp', Auth::user()->telp ?? '0') }}"
-                                           required>
-
-                                    @error('telp')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
+                                           class="form-control"
+                                           value="{{ old('telp', Auth::user()->telp) }}">
 
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="mb-4">
 
-                                    <label>Bukti Pembayaran</label>
+                                    <label class="fw-bold">
+
+                                        Bukti Pembayaran
+
+                                    </label>
 
                                     <input type="file"
                                            name="bukti_pembayaran"
-                                           class="form-control @error('bukti_pembayaran') is-invalid @enderror"
-                                           required>
-
-                                    @error('bukti_pembayaran')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
+                                           class="form-control">
 
                                 </div>
 
                                 <div class="d-grid">
 
-                                    <button type="submit"
-                                            class="btn btn-success">
+                                    <button class="btn btn-success btn-lg">
 
                                         <i class="fas fa-credit-card"></i>
+
                                         Checkout Sekarang
 
                                     </button>
 
                                 </div>
+
+                                <a href="{{ route('landing.produk') }}"
+                                   class="btn btn-outline-primary w-100 mt-3">
+
+                                    <i class="fas fa-shopping-bag"></i>
+
+                                    Lanjut Belanja
+
+                                </a>
 
                             </form>
 
@@ -271,3 +368,28 @@
         </div>
     </section>
 @endsection
+@push('custom-script')
+    <script>
+        $('#selectedOngkir').change(function() {
+
+            let ongkir = Number($(this).find(':selected').data('biaya')) || 0;
+
+            let subtotal = {{ $total }};
+
+            let grand = subtotal + ongkir;
+
+            $('#ongkirBelanja').text(
+                'Rp ' + ongkir.toLocaleString('id-ID')
+            );
+
+            $('#grandTotal').text(
+                'Rp ' + grand.toLocaleString('id-ID')
+            );
+
+            $('#ongkirInput').val(ongkir);
+
+            $('#grandTotalInput').val(grand);
+
+        });
+    </script>
+@endpush
