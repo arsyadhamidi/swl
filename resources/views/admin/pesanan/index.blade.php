@@ -52,6 +52,7 @@
                                     <th style="width: 4%">No.</th>
                                     <th>Name</th>
                                     <th>Tanggal</th>
+                                    <th>Pengantaran</th>
                                     <th>Tot.Harga</th>
                                     <th>Alamat</th>
                                     <th>Telepon</th>
@@ -214,6 +215,11 @@
                     {
                         data: "tgl_pesanan",
                         name: "tgl_pesanan",
+                        defaultContent: "-",
+                    },
+                    {
+                        data: "kota",
+                        name: "kota",
                         defaultContent: "-",
                     },
                     {

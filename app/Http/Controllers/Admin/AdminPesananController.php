@@ -17,64 +17,92 @@ class AdminPesananController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $perPage = $request->input('length', 10);
-            $search = $request->input('search', '');
 
-            $query = Pesanan::join('users', 'pesanans.users_id', 'users.id')
-                ->select([
+            $length = $request->input('length', 10);
+            $start = $request->input('start', 0);
+            $draw = $request->input('draw');
+
+            $search = $request->input('search.value');
+
+            $query = Pesanan::join('users', 'pesanans.users_id', '=', 'users.id')
+                ->leftJoin('ongkirs', 'pesanans.ongkir_id', '=', 'ongkirs.id')
+                ->select(
                     'pesanans.*',
                     'users.name',
                     'users.email',
                     'users.telp',
-                ])
-                ->orderBy('pesanans.id', 'desc');
+                    'ongkirs.kota',
+                    'ongkirs.biaya'
+                );
 
-            if ($search) {
-                $query->where(function ($query) use ($search) {
-                    $query->Where('users.name', 'LIKE', "%{$search}%")
-                        ->orWhere('users.telp', 'LIKE', "%{$search}%")
-                        ->orWhere('users.email', 'LIKE', "%{$search}%");
+            // Total seluruh data
+            $recordsTotal = (clone $query)->count();
+
+            // Filter pencarian
+            if (! empty($search)) {
+
+                $query->where(function ($q) use ($search) {
+
+                    $q->where('users.name', 'like', "%{$search}%")
+                        ->orWhere('users.email', 'like', "%{$search}%")
+                        ->orWhere('users.telp', 'like', "%{$search}%")
+                        ->orWhere('ongkirs.kota', 'like', "%{$search}%");
+
                 });
+
             }
 
-            if ($request->has('start_date') && $request->has('end_date')) {
-                $start_date = $request->start_date;
-                $end_date = $request->end_date;
-                $query->whereBetween('pesanans.tgl_pesanan', [$start_date, $end_date]);
+            // Filter tanggal
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+
+                $query->whereBetween('pesanans.tgl_pesanan', [
+                    $request->start_date.' 00:00:00',
+                    $request->end_date.' 23:59:59',
+                ]);
+
             }
 
-            $totalRecords = $query->count(); // Hitung total data
+            // Total setelah filter
+            $recordsFiltered = (clone $query)->count();
 
-            $data = $query->paginate($perPage); // Gunakan paginate() untuk membagi data sesuai dengan halaman dan jumlah per halaman
+            // Paging
+            $data = $query
+                ->orderByDesc('pesanans.id')
+                ->offset($start)
+                ->limit($length)
+                ->get();
 
-            // Tambahkan kolom aksi
-            $dataWithActions = $data->map(function ($item) {
-                $resultid = $item->id ?? '';
+            foreach ($data as $item) {
+
                 $buktiUrl = asset('storage/'.$item->bukti_pembayaran);
-                $receiptUrl = route('admin-pesanan.detailpesananpdf', $item->id);
+
+                $receiptUrl = route(
+                    'admin-pesanan.detailpesananpdf',
+                    $item->id
+                );
 
                 $item->aksi = '
-                <a href="'.$buktiUrl.'" class="btn btn-outline-warning" target="_blank">
+                <a href="'.$buktiUrl.'" target="_blank" class="btn btn-outline-warning">
                     <i class="fas fa-image"></i>
                 </a>
-                <button type="button"
-                        class="btn btn-outline-primary btn-detail mx-2"
-                        data-id="'.e($resultid).'">
+
+                <button
+                    class="btn btn-outline-primary btn-detail mx-1"
+                    data-id="'.$item->id.'">
                     <i class="fas fa-edit"></i>
                 </button>
-                <a href="'.$receiptUrl.'" class="btn btn-outline-danger" target="_blank">
+
+                <a href="'.$receiptUrl.'" target="_blank" class="btn btn-outline-danger">
                     <i class="fas fa-receipt"></i>
                 </a>
-';
-
-                return $item;
-            });
+            ';
+            }
 
             return response()->json([
-                'draw' => $request->input('draw'), // Ambil nomor draw dari permintaan
-                'recordsTotal' => $totalRecords, // Kirim jumlah total data
-                'recordsFiltered' => $totalRecords, // Jumlah data yang difilter sama dengan jumlah total
-                'data' => $dataWithActions, // Kirim data yang sesuai dengan halaman dan jumlah per halaman
+                'draw' => intval($draw),
+                'recordsTotal' => $recordsTotal,
+                'recordsFiltered' => $recordsFiltered,
+                'data' => $data,
             ]);
         }
 
@@ -141,10 +169,13 @@ class AdminPesananController extends Controller
                 'users.telp',
             ]);
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
-            $query->whereBetween('pesanans.tgl_pesanan', [$start_date, $end_date]);
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+
+            $query->whereBetween('pesanans.tgl_pesanan', [
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
+            ]);
+
         }
 
         $data = $query->orderBy('pesanans.id', 'desc')->get();
@@ -165,10 +196,13 @@ class AdminPesananController extends Controller
                 'users.telp',
             ]);
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $start_date = $request->start_date;
-            $end_date = $request->end_date;
-            $query->whereBetween('pesanans.tgl_pesanan', [$start_date, $end_date]);
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+
+            $query->whereBetween('pesanans.tgl_pesanan', [
+                $request->start_date.' 00:00:00',
+                $request->end_date.' 23:59:59',
+            ]);
+
         }
 
         $data = $query->orderBy('pesanans.id', 'desc')->get();
