@@ -5,7 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token"
+          content="{{ csrf_token() }}">
     <title>@yield('title')</title>
 
     <!-- Google Font: Source Sans Pro -->
@@ -197,6 +198,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ route('admin-ongkir.index') }}"
+                               class="nav-link @yield('menuDataOngkir')">
+                                <i class="nav-icon fas fa-shipping-fast"></i>
+                                <p>Data Ongkir</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ route('admin-barang.index') }}"
                                class="nav-link @yield('menuDataBarang')">
                                 <i class="nav-icon fas fa-box"></i>
@@ -333,6 +341,7 @@
     <script src="{{ asset('plugins/datepicker/bootstrap-datepicker.min.js') }}"></script>
     <script src="{{ asset('plugins/timepicker/bootstrap-timepicker.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('plugins/ckeditor/ckeditor.js') }}"></script>
     <script>
         $(function() {
             bsCustomFileInput.init();

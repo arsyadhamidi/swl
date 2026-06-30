@@ -15,7 +15,9 @@ return new class extends Migration
             $table->integer('id')->autoIncrement();
             $table->integer('users_id');
             $table->timestamp('tgl_pesanan');
-            $table->decimal('tot_harga');
+            $table->decimal('tot_harga', 12, 2);
+            $table->decimal('ongkir', 12, 2)->default(0);
+            $table->decimal('grand_total', 12, 2);
             $table->text('alamat_pengiriman');
             $table->string('telp', 20);
             $table->string('bukti_pembayaran');

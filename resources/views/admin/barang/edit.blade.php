@@ -55,7 +55,7 @@
                                         <textarea name="ket_barang"
                                                   class="form-control @error('ket_barang') is-invalid @enderror"
                                                   rows="5"
-                                                  placeholder="Masukan keterangan">{{ old('ket_barang', $barang->ket_barang ?? '-') }}</textarea>
+                                                  placeholder="Masukan keterangan" id="ketBarangText">{{ old('ket_barang', $barang->ket_barang ?? '-') }}</textarea>
                                     </div>
                                 </div>
                                 <div class="col-lg-12">
@@ -174,6 +174,9 @@
 @endsection
 @push('custom-script')
     <script>
+
+        CKEDITOR.replace('ketBarangText');
+
         $('#selectedKategori').select2({
             theme: 'bootstrap4'
         });

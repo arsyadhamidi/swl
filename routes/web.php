@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminBarangController;
 use App\Http\Controllers\Admin\AdminKategoriController;
 use App\Http\Controllers\Admin\AdminKeranjangController;
+use App\Http\Controllers\Admin\AdminOngkirController;
 use App\Http\Controllers\Admin\AdminPesananController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Dashboard\SettingController;
 use App\Http\Controllers\Landing\LandingController;
 use App\Http\Middleware\CekLevel;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -87,6 +89,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin-barang/store', [AdminBarangController::class, 'store'])->name('admin-barang.store');
         Route::post('/admin-barang/update/{id}', [AdminBarangController::class, 'update'])->name('admin-barang.update');
         Route::post('/admin-barang/destroy/{id}', [AdminBarangController::class, 'destroy'])->name('admin-barang.destroy');
+
+        // Ongkir
+        Route::get('/admin-ongkir/index', [AdminOngkirController::class, 'index'])->name('admin-ongkir.index');
+        Route::get('/admin-ongkir/create', [AdminOngkirController::class, 'create'])->name('admin-ongkir.create');
+        Route::get('/admin-ongkir/edit/{id}', [AdminOngkirController::class, 'edit'])->name('admin-ongkir.edit');
+        Route::post('/admin-ongkir/store', [AdminOngkirController::class, 'store'])->name('admin-ongkir.store');
+        Route::post('/admin-ongkir/update/{id}', [AdminOngkirController::class, 'update'])->name('admin-ongkir.update');
+        Route::post('/admin-ongkir/destroy/{id}', [AdminOngkirController::class, 'destroy'])->name('admin-ongkir.destroy');
 
         // Kategori
         Route::get('/admin-kategori/index', [AdminKategoriController::class, 'index'])->name('admin-kategori.index');
