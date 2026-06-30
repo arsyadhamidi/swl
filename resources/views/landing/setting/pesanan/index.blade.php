@@ -7,12 +7,14 @@
             <table class="table w-100">
                 <thead>
                     <tr>
-                        <th width="4%">No</th>
+                        <th>No</th>
+                        <th>Tanggal</th>
                         <th>Nama Barang</th>
-                        <th width="12%">Variasi</th>
-                        <th width="7%">Qty</th>
-                        <th width="12%">Harga</th>
-                        <th width="12%">Subtotal</th>
+                        <th>Variasi</th>
+                        <th>Qty</th>
+                        <th>Harga</th>
+                        <th>Subtotal</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -24,25 +26,41 @@
                             </td>
 
                             <td>
-                                {{ $item->nm_barang }}
+                                {{ \Carbon\Carbon::parse($data->tgl_pesanan)->format('d/m/Y') }}
                             </td>
 
                             <td>
-                                {{ $item->ukuran }}
+                                {{ $data->nm_barang }}
+                            </td>
+
+                            <td>
+                                {{ $data->ukuran }}
                                 <br>
-                                {{ $item->warna }}
+                                {{ $data->warna }}
                             </td>
 
                             <td>
-                                {{ $item->jumlah }}
+                                {{ $data->jumlah }}
                             </td>
 
                             <td>
-                                Rp {{ number_format($item->harga, 0, ',', '.') }}
+                                Rp {{ number_format($data->harga, 0, ',', '.') }}
                             </td>
 
                             <td>
-                                Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                                Rp {{ number_format($data->subtotal, 0, ',', '.') }}
+                            </td>
+
+                            <td>
+                                @if ($data->status == 'Pending')
+                                    <span class="badge bg-warning">{{ $data->status }}</span>
+                                @elseif($data->status == 'Diproses')
+                                    <span class="badge bg-primary">{{ $data->status }}</span>
+                                @elseif($data->status == 'Selesai')
+                                    <span class="badge bg-success">{{ $data->status }}</span>
+                                @else
+                                    <span class="badge bg-danger">{{ $data->status }}</span>
+                                @endif
                             </td>
 
                         </tr>

@@ -349,7 +349,36 @@ class LandingController extends Controller
     public function pesanan()
     {
         $users = Auth::user();
-        $pesanans = Pesanan::where('users_id', $users->id)->orderBy('id', 'desc')->get();
+
+        $pesanans = DetailPesanan::join(
+            'pesanans',
+            'detail_pesanans.pesanan_id',
+            '=',
+            'pesanans.id'
+        )
+            ->join(
+                'barang_variasis',
+                'detail_pesanans.barang_variasi_id',
+                '=',
+                'barang_variasis.id'
+            )
+            ->join(
+                'barangs',
+                'barang_variasis.barang_id',
+                '=',
+                'barangs.id'
+            )
+            ->select(
+                'detail_pesanans.*',
+                'barangs.nm_barang',
+                'barang_variasis.ukuran',
+                'barang_variasis.warna',
+                'pesanans.tgl_pesanan',
+                'pesanans.status'
+            )
+            ->where('pesanans.users_id', $users->id)
+            ->orderByDesc('detail_pesanans.id')
+            ->get();
 
         return view('landing.setting.pesanan.index', [
             'users' => $users,
