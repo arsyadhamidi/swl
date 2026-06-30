@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             'duplicate' => '12345',
             'telp' => '628111111111',
             'level_id' => '1',
+            'alamat' => '-',
             'email_verified_at' => $carbons
         ]);
     }
