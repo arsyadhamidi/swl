@@ -64,11 +64,29 @@
                                                 class="form-control @error('level_id') is-invalid @enderror"
                                                 id="selectedLevel"
                                                 style="width: 100%">
-                                            <option value="" selected>Pilih Level</option>
-                                            <option value="1" {{ old('level_id', $users->level_id) == '1' ? 'selected' : '' }}>Admin</option>
-                                            <option value="2" {{ old('level_id', $users->level_id) == '2' ? 'selected' : '' }}>Pelanggan</option>
+                                            <option value=""
+                                                    selected>Pilih Level</option>
+                                            <option value="1"
+                                                    {{ old('level_id', $users->level_id) == '1' ? 'selected' : '' }}>Admin</option>
+                                            <option value="2"
+                                                    {{ old('level_id', $users->level_id) == '2' ? 'selected' : '' }}>Pelanggan</option>
                                         </select>
                                         @error('level_id')
+                                            <div class="invalid-feedback">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="mb-3">
+                                        <label><b>Alamat</b></label>
+                                        <textarea name="alamat"
+                                                  class="form-control @error('alamat') is-invalid @enderror"
+                                                  rows="5"
+                                                  placeholder="Masukan alamat"
+                                                  required>{{ old('alamat', $users->alamat ?? '-') }}</textarea>
+                                        @error('alamat')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>

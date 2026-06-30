@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use PDF;
 
@@ -27,7 +28,7 @@ class AdminUserController extends Controller
                 });
             }
 
-            if ($request->has('level_id') && !empty($request->level_id)) {
+            if ($request->has('level_id') && ! empty($request->level_id)) {
                 $query->where('level_id', $request->level_id);
             }
 
@@ -41,19 +42,18 @@ class AdminUserController extends Controller
                 $editUrl = route('admin-user.edit', $item->id ?? '');
 
                 $item->aksi = '
-        <a href="' . $editUrl . '" class="btn btn-outline-primary me-1">
+        <a href="'.$editUrl.'" class="btn btn-outline-primary me-1">
             <i class="fas fa-edit"></i>
         </a>
         <button type="button"
                 class="btn btn-outline-danger btn-delete"
-                data-resultid="' . e($resultid) . '">
+                data-resultid="'.e($resultid).'">
             <i class="fas fa-trash-alt"></i>
         </button>
     ';
 
                 return $item;
             });
-
 
             return response()->json([
                 'draw' => $request->input('draw'), // Ambil nomor draw dari permintaan
@@ -70,7 +70,7 @@ class AdminUserController extends Controller
     {
         $query = User::query();
 
-        if ($request->has('level_id') && !empty($request->level_id)) {
+        if ($request->has('level_id') && ! empty($request->level_id)) {
             $query->where('level_id', $request->level_id);
         }
 
@@ -79,21 +79,22 @@ class AdminUserController extends Controller
         $pdf = PDF::loadView('admin.user.export-pdf', ['users' => $data])
             ->setPaper('A4', 'landscape');
 
-        return $pdf->stream(Carbon::now()->format('YmdHis') . '-users.pdf');
+        return $pdf->stream(Carbon::now()->format('YmdHis').'-users.pdf');
     }
 
     public function generateexcel(Request $request)
     {
         $query = User::query();
 
-        if ($request->has('level_id') && !empty($request->level_id)) {
+        if ($request->has('level_id') && ! empty($request->level_id)) {
             $query->where('level_id', $request->level_id);
         }
 
         $data = $query->orderBy('id', 'desc')->get();
+
         return Excel::download(
             new UserExport($data),
-            Carbon::now()->format('YmdHis') . '-users.xlsx'
+            Carbon::now()->format('YmdHis').'-users.xlsx'
         );
     }
 
@@ -106,23 +107,26 @@ class AdminUserController extends Controller
     {
         $request->validate(
             [
-                'level_id'    => 'required',
-                'name'        => 'required|max:120',
-                'email'       => 'required|unique:users,email|max:255',
-                'telp'        => 'required|max:20',
+                'level_id' => 'required',
+                'name' => 'required|max:120',
+                'email' => 'required|unique:users,email|max:255',
+                'telp' => 'required|max:20',
+                'alamat' => 'required',
             ],
             [
-                'level_id.required'    => 'Level pengguna wajib dipilih.',
+                'level_id.required' => 'Level pengguna wajib dipilih.',
 
-                'name.required'        => 'Nama pengguna wajib diisi.',
-                'name.max'             => 'Nama pengguna maksimal 120 karakter.',
+                'name.required' => 'Nama pengguna wajib diisi.',
+                'name.max' => 'Nama pengguna maksimal 120 karakter.',
 
-                'email.required'       => 'Email pengguna wajib diisi.',
-                'email.unique'         => 'Email sudah digunakan.',
-                'email.max'            => 'Email maksimal 255 karakter.',
+                'email.required' => 'Email pengguna wajib diisi.',
+                'email.unique' => 'Email sudah digunakan.',
+                'email.max' => 'Email maksimal 255 karakter.',
 
-                'telp.required'        => 'Nomor telepon wajib diisi.',
-                'telp.max'             => 'Nomor telepon maksimal 20 karakter.',
+                'telp.required' => 'Nomor telepon wajib diisi.',
+                'telp.max' => 'Nomor telepon maksimal 20 karakter.',
+
+                'alamat.required' => 'Alamat wajib diisi.',
             ]
         );
 
@@ -133,6 +137,7 @@ class AdminUserController extends Controller
             'password' => bcrypt('12345'),
             'duplicate' => '12345',
             'telp' => $request->telp,
+            'alamat' => $request->alamat,
         ]);
 
         return redirect()->route('admin-user.index')->with('success', 'Selamat ! Anda berhasil menambahkan data user registrasi');
@@ -141,6 +146,7 @@ class AdminUserController extends Controller
     public function edit($id)
     {
         $users = User::where('id', $id)->firstOrFail();
+
         return view('admin.user.edit', [
             'users' => $users,
         ]);
@@ -150,23 +156,29 @@ class AdminUserController extends Controller
     {
         $request->validate(
             [
-                'level_id'    => 'required',
-                'name'        => 'required|max:120',
-                'email'       => 'required|unique:users,email|max:255',
-                'telp'        => 'required|max:20',
+                'level_id' => 'required',
+                'name' => 'required|max:120',
+                'email' => [
+                    'required',
+                    'max:255',
+                    Rule::unique('users', 'email')->ignore($id),
+                ],
+                'telp' => 'required|max:20',
+                'alamat' => 'required',
             ],
             [
-                'level_id.required'    => 'Level pengguna wajib dipilih.',
+                'level_id.required' => 'Level pengguna wajib dipilih.',
 
-                'name.required'        => 'Nama pengguna wajib diisi.',
-                'name.max'             => 'Nama pengguna maksimal 120 karakter.',
+                'name.required' => 'Nama pengguna wajib diisi.',
+                'name.max' => 'Nama pengguna maksimal 120 karakter.',
 
-                'email.required'       => 'Email pengguna wajib diisi.',
-                'email.unique'         => 'Email sudah digunakan.',
-                'email.max'            => 'Email maksimal 255 karakter.',
+                'email.required' => 'Email pengguna wajib diisi.',
+                'email.unique' => 'Email sudah digunakan.',
+                'email.max' => 'Email maksimal 255 karakter.',
 
-                'telp.required'        => 'Nomor telepon wajib diisi.',
-                'telp.max'             => 'Nomor telepon maksimal 20 karakter.',
+                'telp.required' => 'Nomor telepon wajib diisi.',
+                'telp.max' => 'Nomor telepon maksimal 20 karakter.',
+                'alamat.required' => 'Alamat wajib diisi.',
             ]
         );
 
@@ -175,6 +187,7 @@ class AdminUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'telp' => $request->telp,
+            'alamat' => $request->alamat,
         ]);
 
         return redirect()->route('admin-user.index')->with('success', 'Selamat ! Anda berhasil memperbaharui data user registrasi');

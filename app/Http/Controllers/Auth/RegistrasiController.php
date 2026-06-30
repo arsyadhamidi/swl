@@ -21,6 +21,7 @@ class RegistrasiController extends Controller
             'email' => 'required|max:255|unique:users,email',
             'password' => 'required|min:5',
             'telp' => 'required|max:20',
+            'alamat' => 'required',
         ], [
 
             // NAME
@@ -39,6 +40,9 @@ class RegistrasiController extends Controller
             // TELEPON
             'telp.required' => 'Nomor telepon wajib diisi.',
             'telp.max' => 'Nomor telepon maksimal 20 karakter.',
+
+            // ALAMAT
+            'alamat.required' => 'Alamat wajib diisi.',
         ]);
 
         $carbons = Carbon::now();

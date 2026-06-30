@@ -60,6 +60,7 @@
                                     <th>Password</th>
                                     <th>Telepon</th>
                                     <th>Level</th>
+                                    <th>Alamat</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -153,6 +154,11 @@
                                 return 'Pelanggan';
                             }
                         }
+                    },
+                    {
+                        data: "alamat",
+                        name: "alamat",
+                        defaultContent: "-",
                     },
                     {
                         data: "aksi",
