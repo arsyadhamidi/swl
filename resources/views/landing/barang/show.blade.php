@@ -324,6 +324,54 @@
 
                                     </div>
 
+                                    {{-- REKENING TUJUAN --}}
+                                    <div class="card border-primary mb-3">
+                                        <div class="card-header bg-primary text-white">
+                                            <i class="fas fa-university me-2"></i>
+                                            Rekening Tujuan Pembayaran
+                                        </div>
+
+                                        <div class="card-body">
+
+                                            <div class="row align-items-center">
+
+                                                <div class="col-md-8">
+                                                    <h5 class="fw-bold mb-1">Bank BRI</h5>
+
+                                                    <p class="mb-1">
+                                                        <strong>No. Rekening</strong>
+                                                    </p>
+
+                                                    <h4 class="text-danger fw-bold mb-2"
+                                                        id="nomorRekening">
+                                                        533501015678533
+                                                    </h4>
+
+                                                    <p class="mb-0">
+                                                        A.N <strong>Sri Wahyuni</strong>
+                                                    </p>
+                                                </div>
+
+                                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                                    <button type="button"
+                                                            class="btn btn-outline-primary"
+                                                            id="copyRekening">
+                                                        <i class="fas fa-copy"></i>
+                                                        Salin Rekening
+                                                    </button>
+                                                </div>
+
+                                            </div>
+
+                                            <hr>
+
+                                            <small class="text-muted">
+                                                Silakan transfer sesuai dengan total pembayaran, kemudian upload bukti transfer di bawah ini.
+                                            </small>
+
+                                        </div>
+                                    </div>
+
                                     <div class="mb-3">
 
                                         <label>Bukti Pembayaran</label>
@@ -390,6 +438,24 @@
         $('#jumlahBarang').on('keyup change', function() {
 
             hitungTotal();
+
+        });
+
+        $('#copyRekening').click(function() {
+
+            const rekening = '533501015678533';
+
+            navigator.clipboard.writeText(rekening).then(() => {
+
+                $(this).html('<i class="fas fa-check"></i> Berhasil Disalin');
+
+                setTimeout(() => {
+
+                    $(this).html('<i class="fas fa-copy"></i> Salin Rekening');
+
+                }, 2000);
+
+            });
 
         });
     </script>
